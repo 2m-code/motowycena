@@ -1,7 +1,9 @@
 import { motion } from 'motion/react';
 import { Tent, Truck, MapPin, Phone, Mail, CheckCircle2, Menu, X, ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import styled, { css } from 'styled-components';
 import { CAMPERS, TRANSPORTS, type Trailer } from './data/trailers';
+import { media } from './styles/theme';
 
 type TrailerRowProps = {
   trailer: Trailer;
@@ -15,75 +17,59 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
   const [activeImage, setActiveImage] = useState(trailer.images[0]);
 
   return (
-    <motion.article
+    <TrailerCard
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
+      viewport={{ once: true, margin: '-80px' }}
       transition={{ duration: 0.5 }}
-      className="bg-white rounded-[24px] overflow-hidden shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] border border-[#E2E8F0]"
     >
-      <div className={`grid grid-cols-1 lg:grid-cols-2 gap-0 ${reverse ? 'lg:[&>*:first-child]:order-2' : ''}`}>
+      <TrailerGrid $reverse={!!reverse}>
         {/* GALLERY */}
-        <div className="p-5 lg:p-8 bg-[#F8FAFC] flex flex-col gap-3">
-          <div className="relative aspect-[4/3] rounded-[16px] overflow-hidden bg-[#CBD5E1]">
-            <img
+        <TrailerGallery>
+          <TrailerImageWrap>
+            <TrailerMainImg
               src={activeImage}
               alt={trailer.name}
-              className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
-            <div
-              className="absolute top-4 left-4 text-white px-4 py-1.5 rounded-[20px] text-[11px] font-bold uppercase tracking-widest shadow-sm"
-              style={{ backgroundColor: badgeColor }}
-            >
+            <TrailerBadge style={{ backgroundColor: badgeColor }}>
               {badge}
-            </div>
-          </div>
+            </TrailerBadge>
+          </TrailerImageWrap>
+
           {trailer.images.length > 1 && (
-            <div className="grid grid-cols-5 gap-2">
+            <ThumbGrid>
               {trailer.images.map((img, idx) => (
-                <button
+                <ThumbButton
                   key={idx}
                   type="button"
                   onClick={() => setActiveImage(img)}
-                  className={`aspect-square rounded-[8px] overflow-hidden border-2 transition ${
-                    activeImage === img ? 'border-[#0066FF]' : 'border-transparent hover:border-[#CBD5E1]'
-                  }`}
+                  $active={activeImage === img}
                 >
-                  <img
+                  <ThumbImg
                     src={img}
                     alt={`${trailer.name} ${idx + 1}`}
-                    className="w-full h-full object-cover"
                     referrerPolicy="no-referrer"
                   />
-                </button>
+                </ThumbButton>
               ))}
-            </div>
+            </ThumbGrid>
           )}
-        </div>
+        </TrailerGallery>
 
         {/* DETAILS */}
-        <div className="p-6 lg:p-10 flex flex-col">
-          <div className="flex items-start justify-between gap-4 mb-4">
-            <h3 className="text-[24px] md:text-[28px] font-extrabold text-[#1E293B] tracking-tight">{trailer.name}</h3>
-            <span className="flex-shrink-0 bg-[#0066FF]/10 text-[#0066FF] px-4 py-2 rounded-[12px] text-[13px] font-bold whitespace-nowrap">
-              {trailer.priceShort}
-            </span>
-          </div>
-          <div className="text-[#475569] leading-relaxed text-[14px] whitespace-pre-line mb-6">
-            {trailer.description}
-          </div>
-          <div className="mt-auto pt-6 border-t border-[#E2E8F0]">
-            <a
-              href="tel:+48123456789"
-              className="block w-full px-6 py-3.5 bg-[#0066FF] text-white rounded-[12px] text-[14px] font-bold text-center hover:bg-[#0044BB] transition shadow-sm"
-            >
-              Zadzwoń
-            </a>
-          </div>
-        </div>
-      </div>
-    </motion.article>
+        <TrailerDetails>
+          <TrailerHeader>
+            <TrailerTitle>{trailer.name}</TrailerTitle>
+            <TrailerPrice>{trailer.priceShort}</TrailerPrice>
+          </TrailerHeader>
+          <TrailerDescription>{trailer.description}</TrailerDescription>
+          <TrailerFooter>
+            <TrailerCta href="tel:+48123456789">Zadzwoń</TrailerCta>
+          </TrailerFooter>
+        </TrailerDetails>
+      </TrailerGrid>
+    </TrailerCard>
   );
 }
 
@@ -103,195 +89,194 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-transparent text-[#1E293B] font-sans selection:bg-[#0066FF] selection:text-white pb-0 relative">
+    <PageWrapper>
       {/* BACKGROUND WATERMARK */}
-      <div className="fixed inset-0 z-[9999] pointer-events-none select-none flex items-center justify-center overflow-hidden">
-        <span className="text-[20vw] font-black tracking-tighter text-[#1E293B] opacity-10 -rotate-45 mix-blend-multiply">2mcode</span>
-      </div>
+      <WatermarkFixed>
+        <WatermarkText>2mcode</WatermarkText>
+      </WatermarkFixed>
 
       {/* FLOATING CORNER WATERMARK */}
-      <div className="fixed bottom-6 right-6 z-[9999] pointer-events-none select-none">
-        <span className="bg-white px-5 py-3 rounded-[12px] border-2 border-[#E2E8F0] shadow-2xl text-[13px] font-black text-[#1E293B] uppercase tracking-widest flex items-center gap-2">
-          Design by <span className="text-[#0066FF]">2mcode</span>
-        </span>
-      </div>
+      <CornerWatermark>
+        <CornerBadge>
+          Design by <CornerBrand>2mcode</CornerBrand>
+        </CornerBadge>
+      </CornerWatermark>
 
       {/* HEADER */}
-      <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md z-50 border-b border-[#E2E8F0]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            <div className="flex-shrink-0 flex items-center gap-2 cursor-pointer">
-              <div className="w-10 h-10 bg-forest text-sand rounded-full flex items-center justify-center">
-                <Tent className="w-5 h-5" />
-              </div>
-              <span className="font-extrabold text-2xl tracking-tight text-[#0066FF]">przyczepy.pl</span>
-            </div>
+      <HeaderBar>
+        <Container>
+          <HeaderRow>
+            <Logo>
+              <LogoIcon>
+                <Tent size={20} />
+              </LogoIcon>
+              <LogoText>przyczepy.pl</LogoText>
+            </Logo>
 
-            <nav className="hidden md:flex items-center gap-8 font-semibold">
-              <a href="#kempingowe" className="hover:text-[#0066FF] transition-colors text-[15px] text-[#1E293B]">Kempingowe</a>
-              <a href="#transportowe" className="hover:text-[#0066FF] transition-colors text-[15px] text-[#1E293B]">Transportowe</a>
-              <a href="#dlaczego-my" className="hover:text-[#0066FF] transition-colors text-[15px] text-[#1E293B]">Warto Wypożyczyć</a>
-              <a href="#kontakt" className="px-6 py-2.5 bg-[#1E293B] text-white rounded-[12px] hover:bg-[#334155] transition text-[15px] font-bold ml-2">Kontakt</a>
-            </nav>
+            <DesktopNav>
+              <NavLink href="#kempingowe">Kempingowe</NavLink>
+              <NavLink href="#transportowe">Transportowe</NavLink>
+              <NavLink href="#dlaczego-my">Warto Wypożyczyć</NavLink>
+              <NavContactLink href="#kontakt">Kontakt</NavContactLink>
+            </DesktopNav>
 
-            <button
-              className="md:hidden p-2 text-forest"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-        </div>
+            <MobileMenuButton onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </MobileMenuButton>
+          </HeaderRow>
+        </Container>
 
         {/* Mobile menu */}
         {isMenuOpen && (
-          <motion.div
+          <MobileMenu
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="md:hidden bg-sand border-b border-forest/10"
           >
-            <div className="px-4 pt-2 pb-6 flex flex-col space-y-1">
-              <a href="#kempingowe" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 font-medium text-forest uppercase tracking-wider text-sm">Przyczepy Kempingowe</a>
-              <a href="#transportowe" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 font-medium text-forest uppercase tracking-wider text-sm">Przyczepy Transportowe</a>
-              <a href="#dlaczego-my" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 font-medium text-forest uppercase tracking-wider text-sm">Skąd Jesteśmy</a>
-              <a href="#kontakt" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 text-clay font-bold uppercase tracking-wider text-sm mt-2">Kontakt</a>
-            </div>
-          </motion.div>
+            <MobileMenuInner>
+              <MobileNavLink href="#kempingowe" onClick={() => setIsMenuOpen(false)}>
+                Przyczepy Kempingowe
+              </MobileNavLink>
+              <MobileNavLink href="#transportowe" onClick={() => setIsMenuOpen(false)}>
+                Przyczepy Transportowe
+              </MobileNavLink>
+              <MobileNavLink href="#dlaczego-my" onClick={() => setIsMenuOpen(false)}>
+                Skąd Jesteśmy
+              </MobileNavLink>
+              <MobileContactLink href="#kontakt" onClick={() => setIsMenuOpen(false)}>
+                Kontakt
+              </MobileContactLink>
+            </MobileMenuInner>
+          </MobileMenu>
         )}
-      </header>
+      </HeaderBar>
 
       {/* HERO SECTION — VARIANT 1 */}
       {heroVariant === 1 && (
-      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&w=1920&q=80"
-            alt="Camping in the woods"
-            referrerPolicy="no-referrer"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0066FF] to-[#0044BB] opacity-95"></div>
-        </div>
+        <HeroSection1>
+          <HeroBg>
+            <HeroBgImg
+              src="https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&w=1920&q=80"
+              alt="Camping in the woods"
+              referrerPolicy="no-referrer"
+            />
+            <HeroBlueGradient />
+          </HeroBg>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center gap-12 text-white">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="flex-1 max-w-2xl"
-          >
-            <span className="inline-block py-1.5 px-4 mb-6 bg-white/10 rounded-full font-bold text-sm tracking-wide">
-              Twój Partner w Podróży
-            </span>
-            <h1 className="text-5xl md:text-[56px] font-extrabold leading-[1.1] mb-6">
-              Kierunek — <br/><span>wolność.</span>
-            </h1>
-            <p className="text-[18px] text-white/90 mb-8 max-w-lg font-medium leading-relaxed">
-              Wynajmujemy komfortowe przyczepy kempingowe (Tabbert Bellini i Lunar Clubman) oraz solidne przyczepy transportowe — lawetę i przyczepę motocyklową. Wypożycz i jedź w nieznane!
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <a href="#kempingowe" className="px-8 py-4 bg-white text-[#0066FF] rounded-[12px] font-bold hover:bg-gray-50 transition text-center shadow-lg shadow-[#0066FF]/20 text-[16px]">
-                Zobacz Przyczepy
-              </a>
-              <a href="#kontakt" className="px-8 py-4 border-2 border-white/30 text-white rounded-[12px] font-bold hover:bg-white/10 transition text-center text-[16px]">
-                Skontaktuj Się
-              </a>
-            </div>
-          </motion.div>
+          <HeroInner>
+            <HeroTextBlock
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <HeroKicker>Twój Partner w Podróży</HeroKicker>
+              <HeroTitle>
+                Kierunek — <br />
+                <span>wolność.</span>
+              </HeroTitle>
+              <HeroSubtitle>
+                Wynajmujemy komfortowe przyczepy kempingowe (Tabbert Bellini i Lunar Clubman) oraz
+                solidne przyczepy transportowe — lawetę i przyczepę motocyklową. Wypożycz i jedź w
+                nieznane!
+              </HeroSubtitle>
+              <HeroButtons>
+                <HeroPrimaryBtnLight href="#kempingowe">Zobacz Przyczepy</HeroPrimaryBtnLight>
+                <HeroSecondaryBtn href="#kontakt">Skontaktuj Się</HeroSecondaryBtn>
+              </HeroButtons>
+            </HeroTextBlock>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, x: 20 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex-1 w-full mt-10 lg:mt-0"
-          >
-            <div className="relative rounded-[24px] overflow-hidden shadow-2xl shadow-blue-900/40 border border-white/20">
-              <img
-                src="/trailers/T1.jpg"
-                alt="Tabbert Bellini – przyczepa kempingowa"
-                className="w-full aspect-[4/3] lg:aspect-square object-cover"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1E293B]/90 via-[#1E293B]/20 to-transparent"></div>
-              <div className="absolute bottom-6 left-6 right-6">
-                <div className="bg-white/95 backdrop-blur-md text-[#1E293B] px-5 py-4 rounded-[16px] inline-flex items-center gap-4 shadow-lg border border-[#E2E8F0]/50 w-full max-w-sm">
-                  <div className="w-12 h-12 bg-[#0066FF]/10 text-[#0066FF] rounded-[12px] flex items-center justify-center flex-shrink-0">
-                    <Tent className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-extrabold text-[#0066FF] uppercase tracking-widest mb-0.5">Twoja Niezależność</div>
-                    <div className="text-[15px] font-bold">Wsiadasz i ruszasz przed siebie</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+            <HeroImageBlock
+              initial={{ opacity: 0, scale: 0.95, x: 20 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <HeroImageWrap>
+                <HeroImg
+                  src="/trailers/T1.jpg"
+                  alt="Tabbert Bellini – przyczepa kempingowa"
+                  referrerPolicy="no-referrer"
+                />
+                <HeroImgDarkGradient />
+                <HeroImgCardWrap>
+                  <HeroImgCard>
+                    <HeroImgCardIcon>
+                      <Tent size={24} />
+                    </HeroImgCardIcon>
+                    <div>
+                      <HeroImgCardSmall>Twoja Niezależność</HeroImgCardSmall>
+                      <HeroImgCardTitle>Wsiadasz i ruszasz przed siebie</HeroImgCardTitle>
+                    </div>
+                  </HeroImgCard>
+                </HeroImgCardWrap>
+              </HeroImageWrap>
+            </HeroImageBlock>
+          </HeroInner>
+        </HeroSection1>
       )}
 
-      {/* HERO SECTION — VARIANT 2 (full-bleed trailer background) */}
+      {/* HERO SECTION — VARIANT 2 */}
       {heroVariant === 2 && (
-      <section className="relative min-h-screen flex items-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img
-            src="/trailers/T1.jpg"
-            alt="Tabbert Bellini – przyczepa kempingowa"
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0F172A]/90 via-[#0F172A]/60 to-[#0F172A]/30"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A]/80 via-transparent to-transparent"></div>
-        </div>
+        <HeroSection2>
+          <HeroBg>
+            <HeroBgImg
+              src="/trailers/T1.jpg"
+              alt="Tabbert Bellini – przyczepa kempingowa"
+              referrerPolicy="no-referrer"
+            />
+            <HeroDarkGradientR />
+            <HeroDarkGradientT />
+          </HeroBg>
 
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20 text-white">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="max-w-2xl"
-          >
-            <span className="inline-block py-1.5 px-4 mb-6 bg-white/10 backdrop-blur-md rounded-full font-bold text-sm tracking-wide border border-white/20">
-              Twój Partner w Podróży
-            </span>
-            <h1 className="text-5xl md:text-[72px] font-extrabold leading-[1.05] mb-6 drop-shadow-lg">
-              Kierunek — <br/><span className="text-[#60A5FA]">wolność.</span>
-            </h1>
-            <p className="text-[18px] md:text-[20px] text-white/90 mb-10 max-w-xl font-medium leading-relaxed drop-shadow">
-              Wynajmujemy komfortowe przyczepy kempingowe (Tabbert Bellini i Lunar Clubman) oraz solidne przyczepy transportowe — lawetę i przyczepę motocyklową. Wypożycz i jedź w nieznane!
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <a href="#kempingowe" className="px-8 py-4 bg-[#0066FF] text-white rounded-[12px] font-bold hover:bg-[#0044BB] transition text-center shadow-2xl shadow-black/40 text-[16px]">
-                Zobacz Przyczepy
-              </a>
-              <a href="#kontakt" className="px-8 py-4 border-2 border-white/40 bg-white/5 backdrop-blur-md text-white rounded-[12px] font-bold hover:bg-white/15 transition text-center text-[16px]">
-                Skontaktuj Się
-              </a>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+          <HeroInner2>
+            <HeroTextBlock
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <HeroKickerV2>Twój Partner w Podróży</HeroKickerV2>
+              <HeroTitleV2>
+                Kierunek — <br />
+                <HeroTitleV2Accent>wolność.</HeroTitleV2Accent>
+              </HeroTitleV2>
+              <HeroSubtitleV2>
+                Wynajmujemy komfortowe przyczepy kempingowe (Tabbert Bellini i Lunar Clubman) oraz
+                solidne przyczepy transportowe — lawetę i przyczepę motocyklową. Wypożycz i jedź w
+                nieznane!
+              </HeroSubtitleV2>
+              <HeroButtons>
+                <HeroPrimaryBtnDark href="#kempingowe">Zobacz Przyczepy</HeroPrimaryBtnDark>
+                <HeroSecondaryBtnV2 href="#kontakt">Skontaktuj Się</HeroSecondaryBtnV2>
+              </HeroButtons>
+            </HeroTextBlock>
+          </HeroInner2>
+        </HeroSection2>
       )}
 
       {/* QUICK HIGHLIGHT */}
-      <div className="bg-white text-[#1E293B] py-5 border-b border-[#E2E8F0] relative z-20 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between text-xs md:text-sm uppercase tracking-widest font-bold">
-          <span className="flex items-center gap-2 mb-3 sm:mb-0"><CheckCircle2 className="w-5 h-5 text-[#0066FF]" /> Przyczepy kempingowe klasy premium</span>
-          <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-[#0066FF]" /> Laweta dwuosiowa i przyczepa motocyklowa</span>
-        </div>
-      </div>
+      <QuickHighlight>
+        <QuickHighlightInner>
+          <QuickHighlightItem>
+            <CheckCircle2 size={20} color="#0066FF" /> Przyczepy kempingowe klasy premium
+          </QuickHighlightItem>
+          <QuickHighlightItem>
+            <CheckCircle2 size={20} color="#0066FF" /> Laweta dwuosiowa i przyczepa motocyklowa
+          </QuickHighlightItem>
+        </QuickHighlightInner>
+      </QuickHighlight>
 
       {/* SECTION: CAMPING */}
-      <section id="kempingowe" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-16 md:flex justify-between items-end">
-          <div className="max-w-2xl">
-            <span className="text-[#0066FF] font-bold tracking-widest uppercase text-sm mb-4 block">Oferta Kempingowa</span>
-            <h2 className="text-[32px] md:text-[40px] font-extrabold text-[#1E293B] mb-6 tracking-tight">Twój hotel z niezłym widokiem.</h2>
-            <p className="text-[#64748B] text-lg leading-relaxed">Zadbana, w pełni wyposażona flota na każdy rodzaj wakacji. Tabbert Bellini klasy premium i bogato wyposażony Lunar Clubman — pełna niezależność na kempingu.</p>
-          </div>
-        </div>
+      <CampingSection id="kempingowe">
+        <SectionHeader>
+          <SectionHeaderText>
+            <SectionKicker>Oferta Kempingowa</SectionKicker>
+            <SectionTitle>Twój hotel z niezłym widokiem.</SectionTitle>
+            <SectionLead>
+              Zadbana, w pełni wyposażona flota na każdy rodzaj wakacji. Tabbert Bellini klasy
+              premium i bogato wyposażony Lunar Clubman — pełna niezależność na kempingu.
+            </SectionLead>
+          </SectionHeaderText>
+        </SectionHeader>
 
-        <div className="space-y-10">
+        <TrailerList>
           {CAMPERS.map((camper, i) => (
             <TrailerRow
               key={camper.id}
@@ -301,22 +286,25 @@ export default function App() {
               reverse={i % 2 === 1}
             />
           ))}
-        </div>
-      </section>
+        </TrailerList>
+      </CampingSection>
 
       {/* SECTION: TRANSPORT */}
-      <section id="transportowe" className="py-24 bg-white border-y border-[#E2E8F0]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-20 text-center max-w-3xl mx-auto">
-            <span className="text-[#0066FF] font-bold tracking-widest uppercase text-sm mb-4 block">Oferta Transportowa</span>
-            <div className="w-16 h-16 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[20px] flex items-center justify-center mx-auto mb-6 text-[#0066FF] shadow-sm">
-              <Truck className="w-8 h-8" />
-            </div>
-            <h2 className="text-[32px] md:text-[40px] font-extrabold text-[#1E293B] mb-6 tracking-tight">Mamy dwie mocne sztuki.</h2>
-            <p className="text-[#64748B] text-lg leading-relaxed">Oprócz rekreacji, zajmujemy się tym co praktyczne. Potrzebujesz przewieźć obniżone auto lub trzy motocykle? Polecamy nasze przyczepy transportowe.</p>
-          </div>
+      <TransportSection id="transportowe">
+        <Container>
+          <TransportHeader>
+            <SectionKicker>Oferta Transportowa</SectionKicker>
+            <TransportIconBox>
+              <Truck size={32} />
+            </TransportIconBox>
+            <SectionTitle>Mamy dwie mocne sztuki.</SectionTitle>
+            <SectionLead>
+              Oprócz rekreacji, zajmujemy się tym co praktyczne. Potrzebujesz przewieźć obniżone
+              auto lub trzy motocykle? Polecamy nasze przyczepy transportowe.
+            </SectionLead>
+          </TransportHeader>
 
-          <div className="space-y-10">
+          <TrailerList>
             {TRANSPORTS.map((trans, i) => (
               <TrailerRow
                 key={trans.id}
@@ -326,130 +314,1370 @@ export default function App() {
                 reverse={i % 2 === 1}
               />
             ))}
-          </div>
-        </div>
-      </section>
+          </TrailerList>
+        </Container>
+      </TransportSection>
 
       {/* WHY US */}
-      <section id="dlaczego-my" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+      <WhyUsSection id="dlaczego-my">
+        <WhyUsGrid>
           <div>
-            <span className="text-[#0066FF] font-bold tracking-widest uppercase text-sm mb-4 block">Dlaczego przyczepy.pl</span>
-            <h2 className="text-[32px] md:text-[40px] font-extrabold text-[#1E293B] mb-12 tracking-tight">Jedziesz, <br/>my załatwiamy resztę.</h2>
+            <SectionKicker>Dlaczego przyczepy.pl</SectionKicker>
+            <WhyUsTitle>
+              Jedziesz, <br />
+              my załatwiamy resztę.
+            </WhyUsTitle>
 
-            <div className="space-y-10">
-              <div className="flex gap-6">
-                <div className="w-14 h-14 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center flex-shrink-0 text-[#0066FF]">
-                  <ShieldCheck className="w-7 h-7" />
-                </div>
+            <WhyUsList>
+              <WhyUsItem>
+                <WhyUsIconBox>
+                  <ShieldCheck size={28} />
+                </WhyUsIconBox>
                 <div>
-                  <h4 className="text-[20px] font-bold text-[#1E293B] mb-2">Pełne ubezpieczenie (OC/AC)</h4>
-                  <p className="text-[#64748B] leading-relaxed text-sm">Wszystkie nasze przyczepy posiadają dedykowane ubezpieczenie do bezpiecznego wynajmu. Podróżujesz bez zbędnego stresu, niezależnie od sytuacji.</p>
+                  <WhyUsItemTitle>Pełne ubezpieczenie (OC/AC)</WhyUsItemTitle>
+                  <WhyUsItemText>
+                    Wszystkie nasze przyczepy posiadają dedykowane ubezpieczenie do bezpiecznego
+                    wynajmu. Podróżujesz bez zbędnego stresu, niezależnie od sytuacji.
+                  </WhyUsItemText>
                 </div>
-              </div>
+              </WhyUsItem>
 
-              <div className="flex gap-6">
-                <div className="w-14 h-14 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center flex-shrink-0 text-[#0066FF]">
-                  <Phone className="w-7 h-7" />
-                </div>
+              <WhyUsItem>
+                <WhyUsIconBox>
+                  <Phone size={28} />
+                </WhyUsIconBox>
                 <div>
-                  <h4 className="text-[20px] font-bold text-[#1E293B] mb-2">Jasne zasady wynajmu</h4>
-                  <p className="text-[#64748B] leading-relaxed text-sm">Zadnych ukrytych opłat za "gotowość", sprzątanie czy instruktaż. Prosta umowa, jeden depozyt i uczciwe rozliczenie.</p>
+                  <WhyUsItemTitle>Jasne zasady wynajmu</WhyUsItemTitle>
+                  <WhyUsItemText>
+                    Zadnych ukrytych opłat za "gotowość", sprzątanie czy instruktaż. Prosta umowa,
+                    jeden depozyt i uczciwe rozliczenie.
+                  </WhyUsItemText>
                 </div>
-              </div>
-            </div>
+              </WhyUsItem>
+            </WhyUsList>
           </div>
-          <div className="relative">
-            <div className="aspect-square md:aspect-[4/3] rounded-[24px] overflow-hidden shadow-lg border border-[#E2E8F0]">
-              <img src="https://images.unsplash.com/photo-1508672019048-805c876b67e2?auto=format&fit=crop&w=800&q=80" alt="Happy customers loading trailer" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-            </div>
-            <div className="absolute -bottom-10 -left-10 bg-[#0066FF] text-white p-10 rounded-[24px] max-w-[280px] shadow-xl hidden md:block">
-              <div className="text-[48px] font-extrabold mb-3">100%</div>
-              <p className="text-[15px] opacity-90 font-medium leading-relaxed">przygotowania technicznego przed każdym wydaniem przyczepy.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+          <WhyUsRight>
+            <WhyUsImgWrap>
+              <WhyUsImg
+                src="https://images.unsplash.com/photo-1508672019048-805c876b67e2?auto=format&fit=crop&w=800&q=80"
+                alt="Happy customers loading trailer"
+                referrerPolicy="no-referrer"
+              />
+            </WhyUsImgWrap>
+            <WhyUsBadge>
+              <WhyUsBadgeNumber>100%</WhyUsBadgeNumber>
+              <WhyUsBadgeText>
+                przygotowania technicznego przed każdym wydaniem przyczepy.
+              </WhyUsBadgeText>
+            </WhyUsBadge>
+          </WhyUsRight>
+        </WhyUsGrid>
+      </WhyUsSection>
 
       {/* CONTACT */}
-      <section id="kontakt" className="py-24 bg-[#1E293B] text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-[#334155]/20 backdrop-blur-sm rounded-[24px] border border-[#334155] p-8 md:p-16 flex flex-col md:flex-row gap-16 shadow-2xl">
-            <div className="md:w-1/2">
-              <span className="text-[#0066FF] font-bold tracking-widest uppercase text-sm mb-4 block">Kontakt</span>
-              <h2 className="text-[32px] md:text-[40px] font-extrabold mb-8 tracking-tight">Czas rezerwować <br/>Twój termin</h2>
-              <p className="text-[#CBD5E1] mb-12 text-lg leading-relaxed">Sprawdź dostępność przyczepy. Napisz lub zadzwoń, a przygotujemy dla Ciebie całą umowę pod wypożyczenie.</p>
+      <ContactSection id="kontakt">
+        <Container>
+          <ContactWrapper>
+            <ContactLeft>
+              <SectionKicker>Kontakt</SectionKicker>
+              <ContactTitle>
+                Czas rezerwować <br />
+                Twój termin
+              </ContactTitle>
+              <ContactLead>
+                Sprawdź dostępność przyczepy. Napisz lub zadzwoń, a przygotujemy dla Ciebie całą
+                umowę pod wypożyczenie.
+              </ContactLead>
 
-              <div className="space-y-8">
-                <a href="tel:+48123456789" className="flex items-center gap-5 hover:text-[#0066FF] transition group">
-                  <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-[#0066FF] transition duration-300">
-                    <Phone className="w-5 h-5" />
-                  </div>
+              <ContactList>
+                <ContactLink href="tel:+48123456789">
+                  <ContactIconCircle>
+                    <Phone size={20} />
+                  </ContactIconCircle>
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest opacity-50 mb-1">Bezpośredni telefon</div>
-                    <div className="text-[20px] font-bold">+48 123 456 789</div>
+                    <ContactLabel>Bezpośredni telefon</ContactLabel>
+                    <ContactValue>+48 123 456 789</ContactValue>
                   </div>
-                </a>
+                </ContactLink>
 
-                <a href="mailto:pytania@przyczepy.pl" className="flex items-center gap-5 hover:text-[#0066FF] transition group">
-                  <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-[#0066FF] transition duration-300">
-                    <Mail className="w-5 h-5" />
-                  </div>
+                <ContactLink href="mailto:pytania@przyczepy.pl">
+                  <ContactIconCircle>
+                    <Mail size={20} />
+                  </ContactIconCircle>
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest opacity-50 mb-1">Wyślij zapytanie</div>
-                    <div className="text-[20px] font-bold">pytania@przyczepy.pl</div>
+                    <ContactLabel>Wyślij zapytanie</ContactLabel>
+                    <ContactValue>pytania@przyczepy.pl</ContactValue>
                   </div>
-                </a>
+                </ContactLink>
 
-                <div className="flex items-center gap-5">
-                  <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center">
-                    <MapPin className="w-5 h-5" />
-                  </div>
+                <ContactStatic>
+                  <ContactIconCircleStatic>
+                    <MapPin size={20} />
+                  </ContactIconCircleStatic>
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest opacity-50 mb-1">Punkt odbioru</div>
-                    <div className="text-[16px] font-bold">ul. Długa 12, Północne Okolice Warszawy</div>
+                    <ContactLabel>Punkt odbioru</ContactLabel>
+                    <ContactValueSm>ul. Długa 12, Północne Okolice Warszawy</ContactValueSm>
                   </div>
-                </div>
-              </div>
-            </div>
+                </ContactStatic>
+              </ContactList>
+            </ContactLeft>
 
-            <div className="md:w-1/2">
-              <form className="space-y-6 bg-[#0F172A] p-8 rounded-[24px] border border-[#334155]" onSubmit={(e) => e.preventDefault()}>
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-widest text-[#94A3B8] mb-2.5">Imię i nazwisko</label>
-                  <input type="text" className="w-full bg-[#1E293B] border border-[#334155] rounded-[12px] px-5 py-4 text-white placeholder-[#64748B] focus:outline-none focus:border-[#0066FF] transition" placeholder="np. Anna Nowak" />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-widest text-[#94A3B8] mb-2.5">Telefon</label>
-                  <input type="tel" className="w-full bg-[#1E293B] border border-[#334155] rounded-[12px] px-5 py-4 text-white placeholder-[#64748B] focus:outline-none focus:border-[#0066FF] transition" placeholder="+48 XXX XXX XXX" />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-widest text-[#94A3B8] mb-2.5">O co pytasz?</label>
-                  <textarea rows={4} className="w-full bg-[#1E293B] border border-[#334155] rounded-[12px] px-5 py-4 text-white placeholder-[#64748B] focus:outline-none focus:border-[#0066FF] transition resize-none" placeholder="Interesuje mnie Tabbert Bellini na weekend majowy..."></textarea>
-                </div>
-                <button type="submit" className="w-full bg-[#0066FF] text-white font-bold tracking-widest text-[14px] uppercase py-4 rounded-[12px] hover:bg-[#0044BB] hover:-translate-y-0.5 transition-all duration-300 shadow-lg mt-4">
-                  Wyślij Wiadomość
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
+            <ContactRight>
+              <ContactForm onSubmit={(e) => e.preventDefault()}>
+                <FormRow>
+                  <FormLabel>Imię i nazwisko</FormLabel>
+                  <FormInput type="text" placeholder="np. Anna Nowak" />
+                </FormRow>
+                <FormRow>
+                  <FormLabel>Telefon</FormLabel>
+                  <FormInput type="tel" placeholder="+48 XXX XXX XXX" />
+                </FormRow>
+                <FormRow>
+                  <FormLabel>O co pytasz?</FormLabel>
+                  <FormTextarea
+                    rows={4}
+                    placeholder="Interesuje mnie Tabbert Bellini na weekend majowy..."
+                  />
+                </FormRow>
+                <FormSubmit type="submit">Wyślij Wiadomość</FormSubmit>
+              </ContactForm>
+            </ContactRight>
+          </ContactWrapper>
+        </Container>
+      </ContactSection>
 
       {/* FOOTER */}
-      <footer className="bg-[#0F172A] text-[#94A3B8] py-10 border-t border-[#1E293B] text-sm text-center">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6 font-medium">
-          <div className="flex items-center gap-3">
-            <Tent className="w-6 h-6 text-[#0066FF]" />
-            <span className="font-extrabold text-[#E2E8F0] tracking-tight text-[18px]">przyczepy.pl</span>
-          </div>
-          <div className="flex gap-6 uppercase tracking-widest text-[11px] font-bold">
-            <a href="#" className="hover:text-white transition">Regulamin Wynajmu</a>
-            <a href="#" className="hover:text-white transition">Polityka Prywatności</a>
-          </div>
-          <p className="text-[12px]">© 2026 przyczepy.pl. Cała Naprzód. | Projekt & Wykonanie: 2mcode</p>
-        </div>
-      </footer>
-    </div>
+      <Footer>
+        <FooterInner>
+          <FooterLogo>
+            <Tent size={24} color="#0066FF" />
+            <FooterLogoText>przyczepy.pl</FooterLogoText>
+          </FooterLogo>
+          <FooterLinks>
+            <FooterLink href="#">Regulamin Wynajmu</FooterLink>
+            <FooterLink href="#">Polityka Prywatności</FooterLink>
+          </FooterLinks>
+          <FooterCopy>© 2026 przyczepy.pl. Cała Naprzód. | Projekt & Wykonanie: 2mcode</FooterCopy>
+        </FooterInner>
+      </Footer>
+    </PageWrapper>
   );
 }
+
+/* =========================================================================
+   STYLED COMPONENTS
+   ========================================================================= */
+
+const containerBase = css`
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+
+  ${media.sm} {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  ${media.lg} {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+`;
+
+const Container = styled.div`
+  ${containerBase}
+`;
+
+const PageWrapper = styled.div`
+  min-height: 100vh;
+  background: transparent;
+  color: #1e293b;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  padding-bottom: 0;
+  position: relative;
+`;
+
+/* ---------- Watermark ---------- */
+const WatermarkFixed = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+`;
+
+const WatermarkText = styled.span`
+  font-size: 20vw;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  color: #1e293b;
+  opacity: 0.1;
+  transform: rotate(-45deg);
+  mix-blend-mode: multiply;
+`;
+
+const CornerWatermark = styled.div`
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  pointer-events: none;
+  user-select: none;
+`;
+
+const CornerBadge = styled.span`
+  background: #ffffff;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  font-size: 13px;
+  font-weight: 900;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const CornerBrand = styled.span`
+  color: #0066ff;
+`;
+
+/* ---------- Header ---------- */
+const HeaderBar = styled.header`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 50;
+  border-bottom: 1px solid #e2e8f0;
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 5rem;
+`;
+
+const Logo = styled.div`
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+`;
+
+const LogoIcon = styled.div`
+  width: 2.5rem;
+  height: 2.5rem;
+  background: #1e293b;
+  color: #ffffff;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const LogoText = styled.span`
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: -0.025em;
+  color: #0066ff;
+`;
+
+const DesktopNav = styled.nav`
+  display: none;
+  align-items: center;
+  gap: 2rem;
+  font-weight: 600;
+
+  ${media.md} {
+    display: flex;
+  }
+`;
+
+const NavLink = styled.a`
+  transition: color 150ms ease;
+  font-size: 15px;
+  color: #1e293b;
+
+  &:hover {
+    color: #0066ff;
+  }
+`;
+
+const NavContactLink = styled.a`
+  padding: 0.625rem 1.5rem;
+  background: #1e293b;
+  color: #ffffff;
+  border-radius: 12px;
+  transition: background 150ms ease;
+  font-size: 15px;
+  font-weight: 700;
+  margin-left: 0.5rem;
+
+  &:hover {
+    background: #334155;
+  }
+`;
+
+const MobileMenuButton = styled.button`
+  display: inline-flex;
+  padding: 0.5rem;
+  color: #1e293b;
+
+  ${media.md} {
+    display: none;
+  }
+`;
+
+const MobileMenu = styled(motion.div)`
+  background: #ffffff;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.1);
+
+  ${media.md} {
+    display: none;
+  }
+`;
+
+const MobileMenuInner = styled.div`
+  padding: 0.5rem 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+const MobileNavLink = styled.a`
+  display: block;
+  padding: 0.75rem;
+  font-weight: 500;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+`;
+
+const MobileContactLink = styled.a`
+  display: block;
+  padding: 0.75rem;
+  color: #0066ff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+`;
+
+/* ---------- Hero Variant 1 ---------- */
+const HeroSection1 = styled.section`
+  position: relative;
+  padding: 8rem 0 5rem;
+  overflow: hidden;
+
+  ${media.md} {
+    padding: 12rem 0 8rem;
+  }
+`;
+
+const HeroBg = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+`;
+
+const HeroBgImg = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const HeroBlueGradient = styled.div`
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom right, #0066ff, #0044bb);
+  opacity: 0.95;
+`;
+
+const HeroInner = styled.div`
+  position: relative;
+  z-index: 10;
+  ${containerBase}
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+  color: #ffffff;
+
+  ${media.lg} {
+    flex-direction: row;
+  }
+`;
+
+const HeroTextBlock = styled(motion.div)`
+  flex: 1;
+  max-width: 42rem;
+`;
+
+const HeroKicker = styled.span`
+  display: inline-block;
+  padding: 0.375rem 1rem;
+  margin-bottom: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.025em;
+`;
+
+const HeroTitle = styled.h1`
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+
+  ${media.md} {
+    font-size: 56px;
+  }
+`;
+
+const HeroSubtitle = styled.p`
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 2rem;
+  max-width: 32rem;
+  font-weight: 500;
+  line-height: 1.625;
+`;
+
+const HeroButtons = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  ${media.sm} {
+    flex-direction: row;
+  }
+`;
+
+const heroButtonBase = css`
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-weight: 700;
+  text-align: center;
+  font-size: 16px;
+  transition: background 150ms ease, color 150ms ease;
+`;
+
+const HeroPrimaryBtnLight = styled.a`
+  ${heroButtonBase}
+  background: #ffffff;
+  color: #0066ff;
+  box-shadow: 0 10px 15px -3px rgba(0, 102, 255, 0.2);
+
+  &:hover {
+    background: #f9fafb;
+  }
+`;
+
+const HeroSecondaryBtn = styled.a`
+  ${heroButtonBase}
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+`;
+
+const HeroImageBlock = styled(motion.div)`
+  flex: 1;
+  width: 100%;
+  margin-top: 2.5rem;
+
+  ${media.lg} {
+    margin-top: 0;
+  }
+`;
+
+const HeroImageWrap = styled.div`
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(30, 58, 138, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+`;
+
+const HeroImg = styled.img`
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+
+  ${media.lg} {
+    aspect-ratio: 1 / 1;
+  }
+`;
+
+const HeroImgDarkGradient = styled.div`
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(30, 41, 59, 0.9),
+    rgba(30, 41, 59, 0.2),
+    transparent
+  );
+`;
+
+const HeroImgCardWrap = styled.div`
+  position: absolute;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  right: 1.5rem;
+`;
+
+const HeroImgCard = styled.div`
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #1e293b;
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(226, 232, 240, 0.5);
+  width: 100%;
+  max-width: 24rem;
+`;
+
+const HeroImgCardIcon = styled.div`
+  width: 3rem;
+  height: 3rem;
+  background: rgba(0, 102, 255, 0.1);
+  color: #0066ff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+const HeroImgCardSmall = styled.div`
+  font-size: 11px;
+  font-weight: 800;
+  color: #0066ff;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.125rem;
+`;
+
+const HeroImgCardTitle = styled.div`
+  font-size: 15px;
+  font-weight: 700;
+`;
+
+/* ---------- Hero Variant 2 ---------- */
+const HeroSection2 = styled.section`
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+`;
+
+const HeroDarkGradientR = styled.div`
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(15, 23, 42, 0.9),
+    rgba(15, 23, 42, 0.6),
+    rgba(15, 23, 42, 0.3)
+  );
+`;
+
+const HeroDarkGradientT = styled.div`
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.8), transparent, transparent);
+`;
+
+const HeroInner2 = styled.div`
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  ${containerBase}
+  padding-top: 8rem;
+  padding-bottom: 5rem;
+  color: #ffffff;
+`;
+
+const HeroKickerV2 = styled.span`
+  display: inline-block;
+  padding: 0.375rem 1rem;
+  margin-bottom: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.025em;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+`;
+
+const HeroTitleV2 = styled.h1`
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.05;
+  margin-bottom: 1.5rem;
+  filter: drop-shadow(0 10px 8px rgba(0, 0, 0, 0.04));
+
+  ${media.md} {
+    font-size: 72px;
+  }
+`;
+
+const HeroTitleV2Accent = styled.span`
+  color: #60a5fa;
+`;
+
+const HeroSubtitleV2 = styled.p`
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 2.5rem;
+  max-width: 36rem;
+  font-weight: 500;
+  line-height: 1.625;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+
+  ${media.md} {
+    font-size: 20px;
+  }
+`;
+
+const HeroPrimaryBtnDark = styled.a`
+  ${heroButtonBase}
+  background: #0066ff;
+  color: #ffffff;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+
+  &:hover {
+    background: #0044bb;
+  }
+`;
+
+const HeroSecondaryBtnV2 = styled.a`
+  ${heroButtonBase}
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #ffffff;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+`;
+
+/* ---------- Quick highlight ---------- */
+const QuickHighlight = styled.div`
+  background: #ffffff;
+  color: #1e293b;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid #e2e8f0;
+  position: relative;
+  z-index: 20;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+`;
+
+const QuickHighlightInner = styled.div`
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+
+  ${media.sm} {
+    flex-direction: row;
+    align-items: center;
+    font-size: 0.875rem;
+  }
+`;
+
+const QuickHighlightItem = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+
+  ${media.sm} {
+    margin-bottom: 0;
+  }
+`;
+
+/* ---------- Section shared ---------- */
+const CampingSection = styled.section`
+  padding-top: 6rem;
+  padding-bottom: 6rem;
+  scroll-margin-top: 5rem;
+  ${containerBase}
+`;
+
+const SectionHeader = styled.div`
+  margin-bottom: 4rem;
+
+  ${media.md} {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+`;
+
+const SectionHeaderText = styled.div`
+  max-width: 42rem;
+`;
+
+const SectionKicker = styled.span`
+  color: #0066ff;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  display: block;
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 32px;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.025em;
+
+  ${media.md} {
+    font-size: 40px;
+  }
+`;
+
+const SectionLead = styled.p`
+  color: #64748b;
+  font-size: 1.125rem;
+  line-height: 1.625;
+`;
+
+const TrailerList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+`;
+
+/* ---------- Transport ---------- */
+const TransportSection = styled.section`
+  padding: 6rem 0;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+  scroll-margin-top: 5rem;
+`;
+
+const TransportHeader = styled.div`
+  margin-bottom: 5rem;
+  text-align: center;
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+`;
+
+const TransportIconBox = styled.div`
+  width: 4rem;
+  height: 4rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  color: #0066ff;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+`;
+
+/* ---------- Why us ---------- */
+const WhyUsSection = styled.section`
+  padding-top: 6rem;
+  padding-bottom: 6rem;
+  scroll-margin-top: 5rem;
+  ${containerBase}
+`;
+
+const WhyUsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 5rem;
+  align-items: center;
+
+  ${media.lg} {
+    grid-template-columns: 1fr 1fr;
+  }
+`;
+
+const WhyUsTitle = styled.h2`
+  font-size: 32px;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 3rem;
+  letter-spacing: -0.025em;
+
+  ${media.md} {
+    font-size: 40px;
+  }
+`;
+
+const WhyUsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+`;
+
+const WhyUsItem = styled.div`
+  display: flex;
+  gap: 1.5rem;
+`;
+
+const WhyUsIconBox = styled.div`
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #0066ff;
+`;
+
+const WhyUsItemTitle = styled.h4`
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+`;
+
+const WhyUsItemText = styled.p`
+  color: #64748b;
+  line-height: 1.625;
+  font-size: 0.875rem;
+`;
+
+const WhyUsRight = styled.div`
+  position: relative;
+`;
+
+const WhyUsImgWrap = styled.div`
+  aspect-ratio: 1 / 1;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+
+  ${media.md} {
+    aspect-ratio: 4 / 3;
+  }
+`;
+
+const WhyUsImg = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const WhyUsBadge = styled.div`
+  position: absolute;
+  bottom: -2.5rem;
+  left: -2.5rem;
+  background: #0066ff;
+  color: #ffffff;
+  padding: 2.5rem;
+  border-radius: 24px;
+  max-width: 280px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  display: none;
+
+  ${media.md} {
+    display: block;
+  }
+`;
+
+const WhyUsBadgeNumber = styled.div`
+  font-size: 48px;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+`;
+
+const WhyUsBadgeText = styled.p`
+  font-size: 15px;
+  opacity: 0.9;
+  font-weight: 500;
+  line-height: 1.625;
+`;
+
+/* ---------- Contact ---------- */
+const ContactSection = styled.section`
+  padding: 6rem 0;
+  background: #1e293b;
+  color: #ffffff;
+  scroll-margin-top: 5rem;
+`;
+
+const ContactWrapper = styled.div`
+  background: rgba(51, 65, 85, 0.2);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-radius: 24px;
+  border: 1px solid #334155;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  ${media.md} {
+    padding: 4rem;
+    flex-direction: row;
+  }
+`;
+
+const ContactLeft = styled.div`
+  ${media.md} {
+    width: 50%;
+  }
+`;
+
+const ContactTitle = styled.h2`
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  letter-spacing: -0.025em;
+
+  ${media.md} {
+    font-size: 40px;
+  }
+`;
+
+const ContactLead = styled.p`
+  color: #cbd5e1;
+  margin-bottom: 3rem;
+  font-size: 1.125rem;
+  line-height: 1.625;
+`;
+
+const ContactList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+`;
+
+const ContactLink = styled.a`
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transition: color 300ms ease;
+
+  &:hover {
+    color: #0066ff;
+  }
+
+  &:hover > div:first-child {
+    background: #0066ff;
+  }
+`;
+
+const ContactStatic = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+`;
+
+const ContactIconCircle = styled.div`
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 300ms ease;
+`;
+
+const ContactIconCircleStatic = styled.div`
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const ContactLabel = styled.div`
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.5;
+  margin-bottom: 0.25rem;
+`;
+
+const ContactValue = styled.div`
+  font-size: 20px;
+  font-weight: 700;
+`;
+
+const ContactValueSm = styled.div`
+  font-size: 16px;
+  font-weight: 700;
+`;
+
+const ContactRight = styled.div`
+  ${media.md} {
+    width: 50%;
+  }
+`;
+
+const ContactForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: #0f172a;
+  padding: 2rem;
+  border-radius: 24px;
+  border: 1px solid #334155;
+`;
+
+const FormRow = styled.div``;
+
+const FormLabel = styled.label`
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #94a3b8;
+  margin-bottom: 0.625rem;
+`;
+
+const FormInput = styled.input`
+  width: 100%;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 1rem;
+  transition: border 150ms ease;
+
+  &::placeholder {
+    color: #64748b;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #0066ff;
+  }
+`;
+
+const FormTextarea = styled.textarea`
+  width: 100%;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 1rem;
+  resize: none;
+  transition: border 150ms ease;
+
+  &::placeholder {
+    color: #64748b;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #0066ff;
+  }
+`;
+
+const FormSubmit = styled.button`
+  width: 100%;
+  background: #0066ff;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  font-size: 14px;
+  text-transform: uppercase;
+  padding: 1rem 0;
+  border-radius: 12px;
+  transition: background 300ms ease, transform 300ms ease;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  margin-top: 1rem;
+
+  &:hover {
+    background: #0044bb;
+    transform: translateY(-2px);
+  }
+`;
+
+/* ---------- Footer ---------- */
+const Footer = styled.footer`
+  background: #0f172a;
+  color: #94a3b8;
+  padding: 2.5rem 0;
+  border-top: 1px solid #1e293b;
+  font-size: 0.875rem;
+  text-align: center;
+`;
+
+const FooterInner = styled.div`
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  font-weight: 500;
+
+  ${media.md} {
+    flex-direction: row;
+  }
+`;
+
+const FooterLogo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+const FooterLogoText = styled.span`
+  font-weight: 800;
+  color: #e2e8f0;
+  letter-spacing: -0.025em;
+  font-size: 18px;
+`;
+
+const FooterLinks = styled.div`
+  display: flex;
+  gap: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 11px;
+  font-weight: 700;
+`;
+
+const FooterLink = styled.a`
+  transition: color 150ms ease;
+
+  &:hover {
+    color: #ffffff;
+  }
+`;
+
+const FooterCopy = styled.p`
+  font-size: 12px;
+`;
+
+/* ---------- TrailerRow ---------- */
+const TrailerCard = styled(motion.article)`
+  background: #ffffff;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+`;
+
+const TrailerGrid = styled.div<{ $reverse: boolean }>`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+
+  ${media.lg} {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    ${({ $reverse }) =>
+      $reverse &&
+      css`
+        & > *:first-child {
+          order: 2;
+        }
+      `}
+  }
+`;
+
+const TrailerGallery = styled.div`
+  padding: 1.25rem;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  ${media.lg} {
+    padding: 2rem;
+  }
+`;
+
+const TrailerImageWrap = styled.div`
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #cbd5e1;
+`;
+
+const TrailerMainImg = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const TrailerBadge = styled.div`
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  color: #ffffff;
+  padding: 0.375rem 1rem;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+`;
+
+const ThumbGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.5rem;
+`;
+
+const ThumbButton = styled.button<{ $active: boolean }>`
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid ${({ $active }) => ($active ? '#0066FF' : 'transparent')};
+  transition: border 150ms ease;
+  padding: 0;
+
+  ${({ $active }) =>
+    !$active &&
+    css`
+      &:hover {
+        border-color: #cbd5e1;
+      }
+    `}
+`;
+
+const ThumbImg = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const TrailerDetails = styled.div`
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  ${media.lg} {
+    padding: 2.5rem;
+  }
+`;
+
+const TrailerHeader = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+`;
+
+const TrailerTitle = styled.h3`
+  font-size: 24px;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: -0.025em;
+  min-width: 0;
+  overflow-wrap: anywhere;
+
+  ${media.md} {
+    font-size: 28px;
+  }
+`;
+
+const TrailerPrice = styled.span`
+  flex-shrink: 0;
+  background: rgba(0, 102, 255, 0.1);
+  color: #0066ff;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+`;
+
+const TrailerDescription = styled.div`
+  color: #475569;
+  line-height: 1.625;
+  font-size: 14px;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  margin-bottom: 1.5rem;
+`;
+
+const TrailerFooter = styled.div`
+  margin-top: auto;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+`;
+
+const TrailerCta = styled.a`
+  display: block;
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background: #0066ff;
+  color: #ffffff;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  transition: background 150ms ease;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    background: #0044bb;
+  }
+`;

@@ -1,51 +1,199 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Tent, Menu, X } from 'lucide-react';
+import styled from 'styled-components';
+import { media } from '../styles/theme';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md z-50 border-b border-[#E2E8F0]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          <div className="flex-shrink-0 flex items-center gap-2 cursor-pointer">
-            <div className="w-10 h-10 bg-forest text-sand rounded-full flex items-center justify-center">
-              <Tent className="w-5 h-5" />
-            </div>
-            <span className="font-extrabold text-2xl tracking-tight text-[#0066FF]">przyczepy.pl</span>
-          </div>
+    <HeaderBar>
+      <Container>
+        <HeaderRow>
+          <Logo>
+            <LogoIcon>
+              <Tent size={20} />
+            </LogoIcon>
+            <LogoText>przyczepy.pl</LogoText>
+          </Logo>
 
-          <nav className="hidden md:flex items-center gap-8 font-semibold">
-            <a href="#kempingowe" className="hover:text-[#0066FF] transition-colors text-[15px] text-[#1E293B]">Kempingowe</a>
-            <a href="#transportowe" className="hover:text-[#0066FF] transition-colors text-[15px] text-[#1E293B]">Transportowe</a>
-            <a href="#dlaczego-my" className="hover:text-[#0066FF] transition-colors text-[15px] text-[#1E293B]">Warto Wypożyczyć</a>
-            <a href="#kontakt" className="px-6 py-2.5 bg-[#1E293B] text-white rounded-[12px] hover:bg-[#334155] transition text-[15px] font-bold ml-2">Kontakt</a>
-          </nav>
+          <DesktopNav>
+            <NavLink href="#kempingowe">Kempingowe</NavLink>
+            <NavLink href="#transportowe">Transportowe</NavLink>
+            <NavLink href="#dlaczego-my">Warto Wypożyczyć</NavLink>
+            <NavContactLink href="#kontakt">Kontakt</NavContactLink>
+          </DesktopNav>
 
-          <button
-            className="md:hidden p-2 text-forest"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-      </div>
+          <MobileMenuButton onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </MobileMenuButton>
+        </HeaderRow>
+      </Container>
 
       {isMenuOpen && (
-        <motion.div
+        <MobileMenu
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="md:hidden bg-sand border-b border-forest/10"
         >
-          <div className="px-4 pt-2 pb-6 flex flex-col space-y-1">
-            <a href="#kempingowe" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 font-medium text-forest uppercase tracking-wider text-sm">Przyczepy Kempingowe</a>
-            <a href="#transportowe" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 font-medium text-forest uppercase tracking-wider text-sm">Przyczepy Transportowe</a>
-            <a href="#dlaczego-my" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 font-medium text-forest uppercase tracking-wider text-sm">Skąd Jesteśmy</a>
-            <a href="#kontakt" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 text-clay font-bold uppercase tracking-wider text-sm mt-2">Kontakt</a>
-          </div>
-        </motion.div>
+          <MobileMenuInner>
+            <MobileNavLink href="#kempingowe" onClick={() => setIsMenuOpen(false)}>
+              Przyczepy Kempingowe
+            </MobileNavLink>
+            <MobileNavLink href="#transportowe" onClick={() => setIsMenuOpen(false)}>
+              Przyczepy Transportowe
+            </MobileNavLink>
+            <MobileNavLink href="#dlaczego-my" onClick={() => setIsMenuOpen(false)}>
+              Skąd Jesteśmy
+            </MobileNavLink>
+            <MobileContactLink href="#kontakt" onClick={() => setIsMenuOpen(false)}>
+              Kontakt
+            </MobileContactLink>
+          </MobileMenuInner>
+        </MobileMenu>
       )}
-    </header>
+    </HeaderBar>
   );
 }
+
+const HeaderBar = styled.header`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 50;
+  border-bottom: 1px solid #e2e8f0;
+`;
+
+const Container = styled.div`
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+
+  ${media.sm} {
+    padding: 0 1.5rem;
+  }
+
+  ${media.lg} {
+    padding: 0 2rem;
+  }
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 5rem;
+`;
+
+const Logo = styled.div`
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+`;
+
+const LogoIcon = styled.div`
+  width: 2.5rem;
+  height: 2.5rem;
+  background: #1e293b;
+  color: #ffffff;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const LogoText = styled.span`
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: -0.025em;
+  color: #0066ff;
+`;
+
+const DesktopNav = styled.nav`
+  display: none;
+  align-items: center;
+  gap: 2rem;
+  font-weight: 600;
+
+  ${media.md} {
+    display: flex;
+  }
+`;
+
+const NavLink = styled.a`
+  transition: color 150ms ease;
+  font-size: 15px;
+  color: #1e293b;
+
+  &:hover {
+    color: #0066ff;
+  }
+`;
+
+const NavContactLink = styled.a`
+  padding: 0.625rem 1.5rem;
+  background: #1e293b;
+  color: #ffffff;
+  border-radius: 12px;
+  transition: background 150ms ease;
+  font-size: 15px;
+  font-weight: 700;
+  margin-left: 0.5rem;
+
+  &:hover {
+    background: #334155;
+  }
+`;
+
+const MobileMenuButton = styled.button`
+  display: inline-flex;
+  padding: 0.5rem;
+  color: #1e293b;
+
+  ${media.md} {
+    display: none;
+  }
+`;
+
+const MobileMenu = styled(motion.div)`
+  background: #ffffff;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.1);
+
+  ${media.md} {
+    display: none;
+  }
+`;
+
+const MobileMenuInner = styled.div`
+  padding: 0.5rem 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+const MobileNavLink = styled.a`
+  display: block;
+  padding: 0.75rem;
+  font-weight: 500;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+`;
+
+const MobileContactLink = styled.a`
+  display: block;
+  padding: 0.75rem;
+  color: #0066ff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+`;
