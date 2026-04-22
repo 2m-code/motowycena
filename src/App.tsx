@@ -89,18 +89,6 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
 
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [heroVariant, setHeroVariant] = useState<1 | 2>(1);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-      if (e.key === '1') setHeroVariant(1);
-      if (e.key === '2') setHeroVariant(2);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
 
   return (
     <div className="min-h-screen bg-transparent text-[#1E293B] font-sans selection:bg-[#0066FF] selection:text-white pb-0 relative">
@@ -160,78 +148,7 @@ export default function App() {
         )}
       </header>
 
-      {/* HERO SECTION — VARIANT 1 */}
-      {heroVariant === 1 && (
-      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&w=1920&q=80"
-            alt="Camping in the woods"
-            referrerPolicy="no-referrer"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0066FF] to-[#0044BB] opacity-95"></div>
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center gap-12 text-white">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="flex-1 max-w-2xl"
-          >
-            <span className="inline-block py-1.5 px-4 mb-6 bg-white/10 rounded-full font-bold text-sm tracking-wide">
-              Twój Partner w Podróży
-            </span>
-            <h1 className="text-5xl md:text-[56px] font-extrabold leading-[1.1] mb-6">
-              Kierunek — <br/><span>wolność.</span>
-            </h1>
-            <p className="text-[18px] text-white/90 mb-8 max-w-lg font-medium leading-relaxed">
-              Wynajmujemy komfortowe przyczepy kempingowe (Tabbert Bellini i Lunar Clubman) oraz solidne przyczepy transportowe — lawetę i przyczepę motocyklową. Wypożycz i jedź w nieznane!
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <a href="#kempingowe" className="px-8 py-4 bg-white text-[#0066FF] rounded-[12px] font-bold hover:bg-gray-50 transition text-center shadow-lg shadow-[#0066FF]/20 text-[16px]">
-                Zobacz Przyczepy
-              </a>
-              <a href="#kontakt" className="px-8 py-4 border-2 border-white/30 text-white rounded-[12px] font-bold hover:bg-white/10 transition text-center text-[16px]">
-                Skontaktuj Się
-              </a>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, x: 20 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex-1 w-full mt-10 lg:mt-0"
-          >
-            <div className="relative rounded-[24px] overflow-hidden shadow-2xl shadow-blue-900/40 border border-white/20">
-              <img
-                src="/trailers/T1.jpg"
-                alt="Tabbert Bellini – przyczepa kempingowa"
-                className="w-full aspect-[4/3] lg:aspect-square object-cover"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1E293B]/90 via-[#1E293B]/20 to-transparent"></div>
-              <div className="absolute bottom-6 left-6 right-6">
-                <div className="bg-white/95 backdrop-blur-md text-[#1E293B] px-5 py-4 rounded-[16px] inline-flex items-center gap-4 shadow-lg border border-[#E2E8F0]/50 w-full max-w-sm">
-                  <div className="w-12 h-12 bg-[#0066FF]/10 text-[#0066FF] rounded-[12px] flex items-center justify-center flex-shrink-0">
-                    <Tent className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-extrabold text-[#0066FF] uppercase tracking-widest mb-0.5">Twoja Niezależność</div>
-                    <div className="text-[15px] font-bold">Wsiadasz i ruszasz przed siebie</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-      )}
-
-      {/* HERO SECTION — VARIANT 2 (full-bleed trailer background) */}
-      {heroVariant === 2 && (
+      {/* HERO SECTION */}
       <section className="relative min-h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
@@ -271,7 +188,6 @@ export default function App() {
           </motion.div>
         </div>
       </section>
-      )}
 
       {/* QUICK HIGHLIGHT */}
       <div className="bg-white text-[#1E293B] py-5 border-b border-[#E2E8F0] relative z-20 shadow-sm">
