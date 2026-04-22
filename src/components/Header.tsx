@@ -15,13 +15,12 @@ export default function Header() {
             <LogoIcon>
               <Tent size={20} />
             </LogoIcon>
-            <LogoText>przyczepy.pl</LogoText>
+            <LogoText>Motowycena Rafał Pelczar</LogoText>
           </Logo>
 
           <DesktopNav>
             <NavLink href="#kempingowe">Kempingowe</NavLink>
             <NavLink href="#transportowe">Transportowe</NavLink>
-            <NavLink href="#dlaczego-my">Warto Wypożyczyć</NavLink>
             <NavContactLink href="#kontakt">Kontakt</NavContactLink>
           </DesktopNav>
 
@@ -42,9 +41,6 @@ export default function Header() {
             </MobileNavLink>
             <MobileNavLink href="#transportowe" onClick={() => setIsMenuOpen(false)}>
               Przyczepy Transportowe
-            </MobileNavLink>
-            <MobileNavLink href="#dlaczego-my" onClick={() => setIsMenuOpen(false)}>
-              Skąd Jesteśmy
             </MobileNavLink>
             <MobileContactLink href="#kontakt" onClick={() => setIsMenuOpen(false)}>
               Kontakt

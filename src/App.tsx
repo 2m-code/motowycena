@@ -1,9 +1,10 @@
 import { motion } from 'motion/react';
-import { Tent, Truck, MapPin, Phone, Mail, CheckCircle2, Menu, X, ShieldCheck } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Tent, Truck, MapPin, Phone, Mail, CheckCircle2, Menu, X } from 'lucide-react';
+import { useState } from 'react';
 import styled, { css } from 'styled-components';
 import { CAMPERS, TRANSPORTS, type Trailer } from './data/trailers';
 import { media } from './styles/theme';
+import CookieConsent from './components/CookieConsent';
 
 type TrailerRowProps = {
   trailer: Trailer;
@@ -75,18 +76,6 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
 
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [heroVariant, setHeroVariant] = useState<1 | 2>(1);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-      if (e.key === '1') setHeroVariant(1);
-      if (e.key === '2') setHeroVariant(2);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
 
   return (
     <PageWrapper>
@@ -106,17 +95,21 @@ export default function App() {
       <HeaderBar>
         <Container>
           <HeaderRow>
-            <Logo>
+            <Logo
+              onClick={() => {
+                setIsMenuOpen(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            >
               <LogoIcon>
                 <Tent size={20} />
               </LogoIcon>
-              <LogoText>przyczepy.pl</LogoText>
+              <LogoText>Motowycena Rafał Pelczar</LogoText>
             </Logo>
 
             <DesktopNav>
               <NavLink href="#kempingowe">Kempingowe</NavLink>
               <NavLink href="#transportowe">Transportowe</NavLink>
-              <NavLink href="#dlaczego-my">Warto Wypożyczyć</NavLink>
               <NavContactLink href="#kontakt">Kontakt</NavContactLink>
             </DesktopNav>
 
@@ -139,9 +132,6 @@ export default function App() {
               <MobileNavLink href="#transportowe" onClick={() => setIsMenuOpen(false)}>
                 Przyczepy Transportowe
               </MobileNavLink>
-              <MobileNavLink href="#dlaczego-my" onClick={() => setIsMenuOpen(false)}>
-                Skąd Jesteśmy
-              </MobileNavLink>
               <MobileContactLink href="#kontakt" onClick={() => setIsMenuOpen(false)}>
                 Kontakt
               </MobileContactLink>
@@ -150,106 +140,41 @@ export default function App() {
         )}
       </HeaderBar>
 
-      {/* HERO SECTION — VARIANT 1 */}
-      {heroVariant === 1 && (
-        <HeroSection1>
-          <HeroBg>
-            <HeroBgImg
-              src="https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&w=1920&q=80"
-              alt="Camping in the woods"
-              referrerPolicy="no-referrer"
-            />
-            <HeroBlueGradient />
-          </HeroBg>
+      {/* HERO SECTION */}
+      <HeroSection2>
+        <HeroBg>
+          <HeroBgImg
+            src="/trailers/T1.jpg"
+            alt="Tabbert Bellini – przyczepa kempingowa"
+            referrerPolicy="no-referrer"
+          />
+          <HeroDarkGradientR />
+          <HeroDarkGradientT />
+        </HeroBg>
 
-          <HeroInner>
-            <HeroTextBlock
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <HeroKicker>Twój Partner w Podróży</HeroKicker>
-              <HeroTitle>
-                Kierunek — <br />
-                <span>wolność.</span>
-              </HeroTitle>
-              <HeroSubtitle>
-                Wynajmujemy komfortowe przyczepy kempingowe (Tabbert Bellini i Lunar Clubman) oraz
-                solidne przyczepy transportowe — lawetę i przyczepę motocyklową. Wypożycz i jedź w
-                nieznane!
-              </HeroSubtitle>
-              <HeroButtons>
-                <HeroPrimaryBtnLight href="#kempingowe">Zobacz Przyczepy</HeroPrimaryBtnLight>
-                <HeroSecondaryBtn href="#kontakt">Skontaktuj Się</HeroSecondaryBtn>
-              </HeroButtons>
-            </HeroTextBlock>
-
-            <HeroImageBlock
-              initial={{ opacity: 0, scale: 0.95, x: 20 }}
-              animate={{ opacity: 1, scale: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              <HeroImageWrap>
-                <HeroImg
-                  src="/trailers/T1.jpg"
-                  alt="Tabbert Bellini – przyczepa kempingowa"
-                  referrerPolicy="no-referrer"
-                />
-                <HeroImgDarkGradient />
-                <HeroImgCardWrap>
-                  <HeroImgCard>
-                    <HeroImgCardIcon>
-                      <Tent size={24} />
-                    </HeroImgCardIcon>
-                    <div>
-                      <HeroImgCardSmall>Twoja Niezależność</HeroImgCardSmall>
-                      <HeroImgCardTitle>Wsiadasz i ruszasz przed siebie</HeroImgCardTitle>
-                    </div>
-                  </HeroImgCard>
-                </HeroImgCardWrap>
-              </HeroImageWrap>
-            </HeroImageBlock>
-          </HeroInner>
-        </HeroSection1>
-      )}
-
-      {/* HERO SECTION — VARIANT 2 */}
-      {heroVariant === 2 && (
-        <HeroSection2>
-          <HeroBg>
-            <HeroBgImg
-              src="/trailers/T1.jpg"
-              alt="Tabbert Bellini – przyczepa kempingowa"
-              referrerPolicy="no-referrer"
-            />
-            <HeroDarkGradientR />
-            <HeroDarkGradientT />
-          </HeroBg>
-
-          <HeroInner2>
-            <HeroTextBlock
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <HeroKickerV2>Twój Partner w Podróży</HeroKickerV2>
-              <HeroTitleV2>
-                Kierunek — <br />
-                <HeroTitleV2Accent>wolność.</HeroTitleV2Accent>
-              </HeroTitleV2>
-              <HeroSubtitleV2>
-                Wynajmujemy komfortowe przyczepy kempingowe (Tabbert Bellini i Lunar Clubman) oraz
-                solidne przyczepy transportowe — lawetę i przyczepę motocyklową. Wypożycz i jedź w
-                nieznane!
-              </HeroSubtitleV2>
-              <HeroButtons>
-                <HeroPrimaryBtnDark href="#kempingowe">Zobacz Przyczepy</HeroPrimaryBtnDark>
-                <HeroSecondaryBtnV2 href="#kontakt">Skontaktuj Się</HeroSecondaryBtnV2>
-              </HeroButtons>
-            </HeroTextBlock>
-          </HeroInner2>
-        </HeroSection2>
-      )}
+        <HeroInner2>
+          <HeroTextBlock
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <HeroKickerV2>Twój Partner w Podróży</HeroKickerV2>
+            <HeroTitleV2>
+              Kierunek — <br />
+              <HeroTitleV2Accent>wolność.</HeroTitleV2Accent>
+            </HeroTitleV2>
+            <HeroSubtitleV2>
+              Wynajmujemy komfortowe przyczepy kempingowe (Tabbert Bellini i Lunar Clubman) oraz
+              solidne przyczepy transportowe — lawetę i przyczepę motocyklową. Wypożycz i jedź w
+              nieznane!
+            </HeroSubtitleV2>
+            <HeroButtons>
+              <HeroPrimaryBtnDark href="#kempingowe">Zobacz Przyczepy</HeroPrimaryBtnDark>
+              <HeroSecondaryBtnV2 href="#kontakt">Skontaktuj Się</HeroSecondaryBtnV2>
+            </HeroButtons>
+          </HeroTextBlock>
+        </HeroInner2>
+      </HeroSection2>
 
       {/* QUICK HIGHLIGHT */}
       <QuickHighlight>
@@ -318,62 +243,6 @@ export default function App() {
         </Container>
       </TransportSection>
 
-      {/* WHY US */}
-      <WhyUsSection id="dlaczego-my">
-        <WhyUsGrid>
-          <div>
-            <SectionKicker>Dlaczego przyczepy.pl</SectionKicker>
-            <WhyUsTitle>
-              Jedziesz, <br />
-              my załatwiamy resztę.
-            </WhyUsTitle>
-
-            <WhyUsList>
-              <WhyUsItem>
-                <WhyUsIconBox>
-                  <ShieldCheck size={28} />
-                </WhyUsIconBox>
-                <div>
-                  <WhyUsItemTitle>Pełne ubezpieczenie (OC/AC)</WhyUsItemTitle>
-                  <WhyUsItemText>
-                    Wszystkie nasze przyczepy posiadają dedykowane ubezpieczenie do bezpiecznego
-                    wynajmu. Podróżujesz bez zbędnego stresu, niezależnie od sytuacji.
-                  </WhyUsItemText>
-                </div>
-              </WhyUsItem>
-
-              <WhyUsItem>
-                <WhyUsIconBox>
-                  <Phone size={28} />
-                </WhyUsIconBox>
-                <div>
-                  <WhyUsItemTitle>Jasne zasady wynajmu</WhyUsItemTitle>
-                  <WhyUsItemText>
-                    Zadnych ukrytych opłat za "gotowość", sprzątanie czy instruktaż. Prosta umowa,
-                    jeden depozyt i uczciwe rozliczenie.
-                  </WhyUsItemText>
-                </div>
-              </WhyUsItem>
-            </WhyUsList>
-          </div>
-          <WhyUsRight>
-            <WhyUsImgWrap>
-              <WhyUsImg
-                src="https://images.unsplash.com/photo-1508672019048-805c876b67e2?auto=format&fit=crop&w=800&q=80"
-                alt="Happy customers loading trailer"
-                referrerPolicy="no-referrer"
-              />
-            </WhyUsImgWrap>
-            <WhyUsBadge>
-              <WhyUsBadgeNumber>100%</WhyUsBadgeNumber>
-              <WhyUsBadgeText>
-                przygotowania technicznego przed każdym wydaniem przyczepy.
-              </WhyUsBadgeText>
-            </WhyUsBadge>
-          </WhyUsRight>
-        </WhyUsGrid>
-      </WhyUsSection>
-
       {/* CONTACT */}
       <ContactSection id="kontakt">
         <Container>
@@ -400,13 +269,13 @@ export default function App() {
                   </div>
                 </ContactLink>
 
-                <ContactLink href="mailto:pytania@przyczepy.pl">
+                <ContactLink href="mailto:kontakt@rafalpelczar.pl">
                   <ContactIconCircle>
                     <Mail size={20} />
                   </ContactIconCircle>
                   <div>
                     <ContactLabel>Wyślij zapytanie</ContactLabel>
-                    <ContactValue>pytania@przyczepy.pl</ContactValue>
+                    <ContactValue>kontakt@rafalpelczar.pl</ContactValue>
                   </div>
                 </ContactLink>
 
@@ -449,17 +318,34 @@ export default function App() {
       {/* FOOTER */}
       <Footer>
         <FooterInner>
-          <FooterLogo>
-            <Tent size={24} color="#0066FF" />
-            <FooterLogoText>przyczepy.pl</FooterLogoText>
-          </FooterLogo>
-          <FooterLinks>
-            <FooterLink href="#">Regulamin Wynajmu</FooterLink>
-            <FooterLink href="#">Polityka Prywatności</FooterLink>
-          </FooterLinks>
-          <FooterCopy>© 2026 przyczepy.pl. Cała Naprzód. | Projekt & Wykonanie: 2mcode</FooterCopy>
+          <FooterTop>
+            <FooterLogo>
+              <Tent size={24} color="#0066FF" />
+              <FooterLogoText>Motowycena Rafał Pelczar</FooterLogoText>
+            </FooterLogo>
+            <FooterLinks>
+              <FooterLink href="#">Regulamin Wynajmu</FooterLink>
+              <FooterLink href="#">Polityka Prywatności</FooterLink>
+            </FooterLinks>
+          </FooterTop>
+          <FooterBottom>
+            <FooterCopy>© 2026 Motowycena Rafał Pelczar.</FooterCopy>
+            <FooterCredit>
+              Projekt &amp; Wykonanie:{' '}
+              <FooterCreditBrand
+                href="https://www.2mcode.pl/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                2mcode
+              </FooterCreditBrand>
+            </FooterCredit>
+          </FooterBottom>
         </FooterInner>
       </Footer>
+
+      {/* COOKIE CONSENT */}
+      <CookieConsent />
     </PageWrapper>
   );
 }
@@ -568,33 +454,58 @@ const HeaderRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.75rem;
   height: 5rem;
 `;
 
 const Logo = styled.div`
-  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
+  min-width: 0;
+  flex: 0 1 auto;
 `;
 
 const LogoIcon = styled.div`
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.25rem;
+  height: 2.25rem;
   background: #1e293b;
   color: #ffffff;
   border-radius: 9999px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+
+  ${media.md} {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
 `;
 
 const LogoText = styled.span`
   font-weight: 800;
-  font-size: 1.5rem;
+  font-size: 1rem;
   letter-spacing: -0.025em;
   color: #0066ff;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+
+  ${media.sm} {
+    font-size: 1.125rem;
+  }
+
+  ${media.md} {
+    font-size: 1.25rem;
+  }
+
+  ${media.lg} {
+    font-size: 1.5rem;
+  }
 `;
 
 const DesktopNav = styled.nav`
@@ -637,6 +548,7 @@ const MobileMenuButton = styled.button`
   display: inline-flex;
   padding: 0.5rem;
   color: #1e293b;
+  flex-shrink: 0;
 
   ${media.md} {
     display: none;
@@ -680,17 +592,7 @@ const MobileContactLink = styled.a`
   margin-top: 0.5rem;
 `;
 
-/* ---------- Hero Variant 1 ---------- */
-const HeroSection1 = styled.section`
-  position: relative;
-  padding: 8rem 0 5rem;
-  overflow: hidden;
-
-  ${media.md} {
-    padding: 12rem 0 8rem;
-  }
-`;
-
+/* ---------- Hero ---------- */
 const HeroBg = styled.div`
   position: absolute;
   inset: 0;
@@ -703,62 +605,9 @@ const HeroBgImg = styled.img`
   object-fit: cover;
 `;
 
-const HeroBlueGradient = styled.div`
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom right, #0066ff, #0044bb);
-  opacity: 0.95;
-`;
-
-const HeroInner = styled.div`
-  position: relative;
-  z-index: 10;
-  ${containerBase}
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3rem;
-  color: #ffffff;
-
-  ${media.lg} {
-    flex-direction: row;
-  }
-`;
-
 const HeroTextBlock = styled(motion.div)`
   flex: 1;
   max-width: 42rem;
-`;
-
-const HeroKicker = styled.span`
-  display: inline-block;
-  padding: 0.375rem 1rem;
-  margin-bottom: 1.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 9999px;
-  font-weight: 700;
-  font-size: 0.875rem;
-  letter-spacing: 0.025em;
-`;
-
-const HeroTitle = styled.h1`
-  font-size: 3rem;
-  font-weight: 800;
-  line-height: 1.1;
-  margin-bottom: 1.5rem;
-
-  ${media.md} {
-    font-size: 56px;
-  }
-`;
-
-const HeroSubtitle = styled.p`
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 2rem;
-  max-width: 32rem;
-  font-weight: 500;
-  line-height: 1.625;
 `;
 
 const HeroButtons = styled.div`
@@ -780,116 +629,6 @@ const heroButtonBase = css`
   transition: background 150ms ease, color 150ms ease;
 `;
 
-const HeroPrimaryBtnLight = styled.a`
-  ${heroButtonBase}
-  background: #ffffff;
-  color: #0066ff;
-  box-shadow: 0 10px 15px -3px rgba(0, 102, 255, 0.2);
-
-  &:hover {
-    background: #f9fafb;
-  }
-`;
-
-const HeroSecondaryBtn = styled.a`
-  ${heroButtonBase}
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  color: #ffffff;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.1);
-  }
-`;
-
-const HeroImageBlock = styled(motion.div)`
-  flex: 1;
-  width: 100%;
-  margin-top: 2.5rem;
-
-  ${media.lg} {
-    margin-top: 0;
-  }
-`;
-
-const HeroImageWrap = styled.div`
-  position: relative;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(30, 58, 138, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-`;
-
-const HeroImg = styled.img`
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-
-  ${media.lg} {
-    aspect-ratio: 1 / 1;
-  }
-`;
-
-const HeroImgDarkGradient = styled.div`
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(30, 41, 59, 0.9),
-    rgba(30, 41, 59, 0.2),
-    transparent
-  );
-`;
-
-const HeroImgCardWrap = styled.div`
-  position: absolute;
-  bottom: 1.5rem;
-  left: 1.5rem;
-  right: 1.5rem;
-`;
-
-const HeroImgCard = styled.div`
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: #1e293b;
-  padding: 1rem 1.25rem;
-  border-radius: 16px;
-  display: inline-flex;
-  align-items: center;
-  gap: 1rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(226, 232, 240, 0.5);
-  width: 100%;
-  max-width: 24rem;
-`;
-
-const HeroImgCardIcon = styled.div`
-  width: 3rem;
-  height: 3rem;
-  background: rgba(0, 102, 255, 0.1);
-  color: #0066ff;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-`;
-
-const HeroImgCardSmall = styled.div`
-  font-size: 11px;
-  font-weight: 800;
-  color: #0066ff;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 0.125rem;
-`;
-
-const HeroImgCardTitle = styled.div`
-  font-size: 15px;
-  font-weight: 700;
-`;
-
-/* ---------- Hero Variant 2 ---------- */
 const HeroSection2 = styled.section`
   position: relative;
   min-height: 100vh;
@@ -1039,7 +778,7 @@ const QuickHighlightItem = styled.span`
 const CampingSection = styled.section`
   padding-top: 6rem;
   padding-bottom: 6rem;
-  scroll-margin-top: 5rem;
+  scroll-margin-top: 1rem;
   ${containerBase}
 `;
 
@@ -1097,7 +836,7 @@ const TransportSection = styled.section`
   background: #ffffff;
   border-top: 1px solid #e2e8f0;
   border-bottom: 1px solid #e2e8f0;
-  scroll-margin-top: 5rem;
+  scroll-margin-top: 1rem;
 `;
 
 const TransportHeader = styled.div`
@@ -1122,132 +861,12 @@ const TransportIconBox = styled.div`
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 `;
 
-/* ---------- Why us ---------- */
-const WhyUsSection = styled.section`
-  padding-top: 6rem;
-  padding-bottom: 6rem;
-  scroll-margin-top: 5rem;
-  ${containerBase}
-`;
-
-const WhyUsGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 5rem;
-  align-items: center;
-
-  ${media.lg} {
-    grid-template-columns: 1fr 1fr;
-  }
-`;
-
-const WhyUsTitle = styled.h2`
-  font-size: 32px;
-  font-weight: 800;
-  color: #1e293b;
-  margin-bottom: 3rem;
-  letter-spacing: -0.025em;
-
-  ${media.md} {
-    font-size: 40px;
-  }
-`;
-
-const WhyUsList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
-`;
-
-const WhyUsItem = styled.div`
-  display: flex;
-  gap: 1.5rem;
-`;
-
-const WhyUsIconBox = styled.div`
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 1rem;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: #0066ff;
-`;
-
-const WhyUsItemTitle = styled.h4`
-  font-size: 20px;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 0.5rem;
-`;
-
-const WhyUsItemText = styled.p`
-  color: #64748b;
-  line-height: 1.625;
-  font-size: 0.875rem;
-`;
-
-const WhyUsRight = styled.div`
-  position: relative;
-`;
-
-const WhyUsImgWrap = styled.div`
-  aspect-ratio: 1 / 1;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
-
-  ${media.md} {
-    aspect-ratio: 4 / 3;
-  }
-`;
-
-const WhyUsImg = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-`;
-
-const WhyUsBadge = styled.div`
-  position: absolute;
-  bottom: -2.5rem;
-  left: -2.5rem;
-  background: #0066ff;
-  color: #ffffff;
-  padding: 2.5rem;
-  border-radius: 24px;
-  max-width: 280px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  display: none;
-
-  ${media.md} {
-    display: block;
-  }
-`;
-
-const WhyUsBadgeNumber = styled.div`
-  font-size: 48px;
-  font-weight: 800;
-  margin-bottom: 0.75rem;
-`;
-
-const WhyUsBadgeText = styled.p`
-  font-size: 15px;
-  opacity: 0.9;
-  font-weight: 500;
-  line-height: 1.625;
-`;
-
 /* ---------- Contact ---------- */
 const ContactSection = styled.section`
   padding: 6rem 0;
   background: #1e293b;
   color: #ffffff;
-  scroll-margin-top: 5rem;
+  scroll-margin-top: 1rem;
 `;
 
 const ContactWrapper = styled.div`
@@ -1302,14 +921,17 @@ const ContactLink = styled.a`
   display: flex;
   align-items: center;
   gap: 1.25rem;
-  transition: color 300ms ease;
+  transition: transform 300ms ease;
+  min-width: 0;
 
   &:hover {
-    color: #0066ff;
+    transform: translateX(4px);
   }
 
   &:hover > div:first-child {
-    background: #0066ff;
+    background: rgba(0, 102, 255, 0.95);
+    border-color: rgba(96, 165, 250, 0.6);
+    box-shadow: 0 10px 25px -10px rgba(0, 102, 255, 0.6);
   }
 `;
 
@@ -1317,24 +939,31 @@ const ContactStatic = styled.div`
   display: flex;
   align-items: center;
   gap: 1.25rem;
+  min-width: 0;
 `;
 
 const ContactIconCircle = styled.div`
   width: 3.5rem;
   height: 3.5rem;
+  flex-shrink: 0;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 300ms ease;
+  transition: background 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
 `;
 
 const ContactIconCircleStatic = styled.div`
   width: 3.5rem;
   height: 3.5rem;
+  flex-shrink: 0;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1350,13 +979,26 @@ const ContactLabel = styled.div`
 `;
 
 const ContactValue = styled.div`
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+
+  ${media.sm} {
+    font-size: 20px;
+  }
 `;
 
 const ContactValueSm = styled.div`
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.4;
+
+  ${media.sm} {
+    font-size: 16px;
+  }
 `;
 
 const ContactRight = styled.div`
@@ -1467,12 +1109,27 @@ const FooterInner = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
+  gap: 2rem;
   font-weight: 500;
+
+  ${media.sm} {
+    padding: 0 1.5rem;
+  }
+`;
+
+const FooterTop = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
 
   ${media.md} {
     flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
   }
 `;
 
@@ -1480,18 +1137,29 @@ const FooterLogo = styled.div`
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  min-width: 0;
+  max-width: 100%;
 `;
 
 const FooterLogoText = styled.span`
   font-weight: 800;
   color: #e2e8f0;
   letter-spacing: -0.025em;
-  font-size: 18px;
+  font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  ${media.md} {
+    font-size: 18px;
+  }
 `;
 
 const FooterLinks = styled.div`
   display: flex;
-  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem 1.5rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-size: 11px;
@@ -1506,8 +1174,43 @@ const FooterLink = styled.a`
   }
 `;
 
+const FooterBottom = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #1e293b;
+`;
+
 const FooterCopy = styled.p`
   font-size: 12px;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.5;
+`;
+
+const FooterCredit = styled.p`
+  font-size: 11px;
+  color: #64748b;
+  margin: 0;
+  letter-spacing: 0.05em;
+  line-height: 1.5;
+`;
+
+const FooterCreditBrand = styled.a`
+  color: #cbd5e1;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  transition: color 150ms ease;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    color: #60a5fa;
+  }
 `;
 
 /* ---------- TrailerRow ---------- */
