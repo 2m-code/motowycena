@@ -1,10 +1,20 @@
 import { motion } from 'motion/react';
 import { Tent, Truck, MapPin, Phone, Mail, CheckCircle2, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled, { css } from 'styled-components';
 import { CAMPERS, TRANSPORTS, type Trailer } from './data/trailers';
 import { media } from './styles/theme';
 import CookieConsent from './components/CookieConsent';
+import PrivacyPolicy from './components/PrivacyPolicy';
+
+const PRIVACY_HASH = '#polityka-prywatnosci';
+type View = 'main' | 'privacy';
+
+function getViewFromHash(): View {
+  return typeof window !== 'undefined' && window.location.hash === PRIVACY_HASH
+    ? 'privacy'
+    : 'main';
+}
 
 type TrailerRowProps = {
   trailer: Trailer;
@@ -66,7 +76,7 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
           </TrailerHeader>
           <TrailerDescription>{trailer.description}</TrailerDescription>
           <TrailerFooter>
-            <TrailerCta href="tel:+48123456789">Zadzwoń</TrailerCta>
+            <TrailerCta href="tel:+481509146666">Zadzwoń</TrailerCta>
           </TrailerFooter>
         </TrailerDetails>
       </TrailerGrid>
@@ -76,18 +86,57 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
 
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [view, setView] = useState<View>(() => getViewFromHash());
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const next = getViewFromHash();
+      setView(next);
+
+      if (next === 'privacy') {
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      } else {
+        // Po powrocie z polityki: jeśli hash wskazuje sekcję, scrolluj do niej,
+        // w innym wypadku wjedź na samą górę.
+        const hash = window.location.hash;
+        requestAnimationFrame(() => {
+          if (hash && hash.length > 1 && hash !== PRIVACY_HASH) {
+            const el = document.querySelector(hash);
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              return;
+            }
+          }
+          window.scrollTo({ top: 0, behavior: 'auto' });
+        });
+      }
+    };
+
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  const goToMain = () => {
+    if (window.location.hash) {
+      // czysto: usuń hash z URL i wróć na górę
+      window.history.pushState('', document.title, window.location.pathname + window.location.search);
+    }
+    setView('main');
+    setIsMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <PageWrapper>
       {/* BACKGROUND WATERMARK */}
       <WatermarkFixed>
-        <WatermarkText>2mcode</WatermarkText>
+        <WatermarkText>2mcode.pl</WatermarkText>
       </WatermarkFixed>
 
       {/* FLOATING CORNER WATERMARK */}
       <CornerWatermark>
         <CornerBadge>
-          Design by <CornerBrand>2mcode</CornerBrand>
+          Design by <CornerBrand>2mcode.pl</CornerBrand>
         </CornerBadge>
       </CornerWatermark>
 
@@ -95,12 +144,7 @@ export default function App() {
       <HeaderBar>
         <Container>
           <HeaderRow>
-            <Logo
-              onClick={() => {
-                setIsMenuOpen(false);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-            >
+            <Logo onClick={goToMain}>
               <LogoIcon>
                 <Tent size={20} />
               </LogoIcon>
@@ -140,12 +184,16 @@ export default function App() {
         )}
       </HeaderBar>
 
+      {view === 'privacy' ? (
+        <PrivacyPolicy onBack={goToMain} />
+      ) : (
+      <>
       {/* HERO SECTION */}
       <HeroSection2>
         <HeroBg>
           <HeroBgImg
             src="/trailers/T1.jpg"
-            alt="Tabbert Bellini – przyczepa kempingowa"
+            alt="Tabbert Bellini - przyczepa kempingowa"
             referrerPolicy="no-referrer"
           />
           <HeroDarkGradientR />
@@ -160,12 +208,12 @@ export default function App() {
           >
             <HeroKickerV2>Twój Partner w Podróży</HeroKickerV2>
             <HeroTitleV2>
-              Kierunek — <br />
+              Kierunek - <br />
               <HeroTitleV2Accent>wolność.</HeroTitleV2Accent>
             </HeroTitleV2>
             <HeroSubtitleV2>
               Wynajmujemy komfortowe przyczepy kempingowe (Tabbert Bellini i Lunar Clubman) oraz
-              solidne przyczepy transportowe — lawetę i przyczepę motocyklową. Wypożycz i jedź w
+              solidne przyczepy transportowe - lawetę i przyczepę motocyklową. Wypożycz i jedź w
               nieznane!
             </HeroSubtitleV2>
             <HeroButtons>
@@ -196,7 +244,7 @@ export default function App() {
             <SectionTitle>Twój hotel z niezłym widokiem.</SectionTitle>
             <SectionLead>
               Zadbana, w pełni wyposażona flota na każdy rodzaj wakacji. Tabbert Bellini klasy
-              premium i bogato wyposażony Lunar Clubman — pełna niezależność na kempingu.
+              premium i bogato wyposażony Lunar Clubman - pełna niezależność na kempingu.
             </SectionLead>
           </SectionHeaderText>
         </SectionHeader>
@@ -265,17 +313,17 @@ export default function App() {
                   </ContactIconCircle>
                   <div>
                     <ContactLabel>Bezpośredni telefon</ContactLabel>
-                    <ContactValue>+48 123 456 789</ContactValue>
+                    <ContactValue>+48509146666</ContactValue>
                   </div>
                 </ContactLink>
 
-                <ContactLink href="mailto:kontakt@rafalpelczar.pl">
+                <ContactLink href="mailto:biuro@motowycena.pl">
                   <ContactIconCircle>
                     <Mail size={20} />
                   </ContactIconCircle>
                   <div>
                     <ContactLabel>Wyślij zapytanie</ContactLabel>
-                    <ContactValue>kontakt@rafalpelczar.pl</ContactValue>
+                    <ContactValue>biuro@motowycena.pl</ContactValue>
                   </div>
                 </ContactLink>
 
@@ -285,7 +333,7 @@ export default function App() {
                   </ContactIconCircleStatic>
                   <div>
                     <ContactLabel>Punkt odbioru</ContactLabel>
-                    <ContactValueSm>ul. Długa 12, Północne Okolice Warszawy</ContactValueSm>
+                    <ContactValueSm>Ul. Spacerowa 10, 63-430 Garki</ContactValueSm>
                   </div>
                 </ContactStatic>
               </ContactList>
@@ -314,6 +362,8 @@ export default function App() {
           </ContactWrapper>
         </Container>
       </ContactSection>
+      </>
+      )}
 
       {/* FOOTER */}
       <Footer>
@@ -325,7 +375,7 @@ export default function App() {
             </FooterLogo>
             <FooterLinks>
               <FooterLink href="#">Regulamin Wynajmu</FooterLink>
-              <FooterLink href="#">Polityka Prywatności</FooterLink>
+              <FooterLink href={PRIVACY_HASH}>Polityka Prywatności</FooterLink>
             </FooterLinks>
           </FooterTop>
           <FooterBottom>
@@ -337,7 +387,7 @@ export default function App() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                2mcode
+                2mcode.pl
               </FooterCreditBrand>
             </FooterCredit>
           </FooterBottom>
@@ -385,7 +435,7 @@ const PageWrapper = styled.div`
   position: relative;
 `;
 
-/* ---------- Watermark ---------- */
+/* --------- Watermark ---------- */
 const WatermarkFixed = styled.div`
   position: fixed;
   inset: 0;
@@ -437,7 +487,7 @@ const CornerBrand = styled.span`
   color: #0066ff;
 `;
 
-/* ---------- Header ---------- */
+/* --------- Header ---------- */
 const HeaderBar = styled.header`
   position: fixed;
   top: 0;
@@ -592,7 +642,7 @@ const MobileContactLink = styled.a`
   margin-top: 0.5rem;
 `;
 
-/* ---------- Hero ---------- */
+/* --------- Hero ---------- */
 const HeroBg = styled.div`
   position: absolute;
   inset: 0;

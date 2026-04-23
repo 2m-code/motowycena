@@ -55,7 +55,7 @@ export default function CookieConsent() {
               <Text>
                 Ta strona używa plików cookies, aby zapewnić poprawne działanie i analizować ruch.
                 Możesz zaakceptować wszystkie lub odrzucić opcjonalne. Szczegóły znajdziesz w naszej{' '}
-                <PolicyLink href="#">Polityce Prywatności</PolicyLink>.
+                <PolicyLink href="#polityka-prywatnosci">Polityce Prywatności</PolicyLink>.
               </Text>
             </Content>
 
@@ -82,7 +82,7 @@ export default function CookieConsent() {
   );
 }
 
-/* ---------- Styles ---------- */
+/* --------- Styles ---------- */
 
 const Banner = styled(motion.div)`
   position: fixed;

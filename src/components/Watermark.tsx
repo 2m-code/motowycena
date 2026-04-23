@@ -4,12 +4,12 @@ export default function Watermark() {
   return (
     <>
       <WatermarkFixed>
-        <WatermarkText>2mcode</WatermarkText>
+        <WatermarkText>2mcode.pl</WatermarkText>
       </WatermarkFixed>
 
       <CornerWatermark>
         <CornerBadge>
-          Design by <CornerBrand>2mcode</CornerBrand>
+          Design by <CornerBrand>2mcode.pl</CornerBrand>
         </CornerBadge>
       </CornerWatermark>
     </>
