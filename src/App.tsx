@@ -50,13 +50,15 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
           </TrailerImageWrap>
 
           {trailer.images.length > 1 && (
-            <ThumbGrid>
+            <ThumbGrid $count={trailer.images.length}>
               {trailer.images.map((img, idx) => (
                 <ThumbButton
                   key={idx}
                   type="button"
                   onClick={() => setActiveImage(img)}
                   $active={activeImage === img}
+                  aria-label={`Pokaż zdjęcie ${idx + 1} z ${trailer.images.length}`}
+                  aria-pressed={activeImage === img}
                 >
                   <ThumbImg
                     src={img}
@@ -178,7 +180,11 @@ export default function App() {
               <NavContactLink href="#kontakt">Kontakt</NavContactLink>
             </DesktopNav>
 
-            <MobileMenuButton onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <MobileMenuButton
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label={isMenuOpen ? 'Zamknij menu' : 'Otwórz menu'}
+              aria-expanded={isMenuOpen}
+            >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </MobileMenuButton>
           </HeaderRow>
@@ -1373,9 +1379,9 @@ const TrailerBadge = styled.div`
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 `;
 
-const ThumbGrid = styled.div`
+const ThumbGrid = styled.div<{ $count: number }>`
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(${({ $count }) => Math.min($count, 6)}, minmax(0, 1fr));
   gap: 0.5rem;
 `;
 
