@@ -156,7 +156,9 @@ export default function App() {
     <PageWrapper>
       {/* BACKGROUND WATERMARK */}
       <WatermarkFixed>
-        <WatermarkText>2mcode.pl</WatermarkText>
+        {Array.from({ length: 12 }).map((_, i) => (
+          <WatermarkText key={i}>2mcode.pl</WatermarkText>
+        ))}
       </WatermarkFixed>
 
       {/* FLOATING CORNER WATERMARK */}
@@ -511,20 +513,24 @@ const WatermarkFixed = styled.div`
   z-index: 9999;
   pointer-events: none;
   user-select: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 0;
 `;
 
 const WatermarkText = styled.span`
-  font-size: 20vw;
+  font-size: 7vw;
   font-weight: 900;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.02em;
   color: #1e293b;
-  opacity: 0.1;
-  transform: rotate(-45deg);
-  mix-blend-mode: multiply;
+  opacity: 0.12;
+  transform: rotate(-35deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
 `;
 
 const CornerWatermark = styled.div`
@@ -537,14 +543,14 @@ const CornerWatermark = styled.div`
 `;
 
 const CornerBadge = styled.span`
-  background: #ffffff;
+  background: #0f172a;
   padding: 0.75rem 1.25rem;
   border-radius: 12px;
-  border: 2px solid #e2e8f0;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 2px solid #0066ff;
+  box-shadow: 0 8px 32px -4px rgba(0, 102, 255, 0.5);
   font-size: 13px;
   font-weight: 900;
-  color: #1e293b;
+  color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   display: flex;
