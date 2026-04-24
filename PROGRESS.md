@@ -26,7 +26,7 @@
 ### ⏸️ Blokowane przez klienta
 
 - [ ] **Formularz → Formspree/Make** — `mailto:` działa ale nie dostaniesz maila jeśli user nie otworzy klienta pocztowego. 5 min fix: Formspree free (50/mies.) lub Make webhook
-- [ ] **OG image 1200×630** — teraz `T1.jpg` autocroppowany. Dedykowana grafika dla FB/WhatsApp share
+- [x] ~~**OG image 1200×630** — `public/og-image.jpg` wygenerowany skryptem (`scripts/generate-og.mjs`), `index.html` zaktualizowany~~
 - [ ] **Regulamin wynajmu** — szablon gotowy (`PrivacyPolicy.tsx`), potrzebna treść od Rafała
 
 ### 🙋 Ręczne testy w przeglądarce (przed mergem)
