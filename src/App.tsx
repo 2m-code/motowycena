@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Tent, Truck, MapPin, Phone, Mail, CheckCircle2, Menu, X } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import styled, { css } from 'styled-components';
-import { CAMPERS, TRANSPORTS, type Trailer } from './data/trailers';
+import { CAMPERS, TRANSPORTS, imgUrl, type Trailer } from './data/trailers';
 import { media } from './styles/theme';
 import CookieConsent from './components/CookieConsent';
 import PrivacyPolicy from './components/PrivacyPolicy';
@@ -39,7 +39,7 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
         <TrailerGallery>
           <TrailerImageWrap>
             <TrailerMainImg
-              src={activeImage}
+              src={imgUrl(activeImage)}
               alt={trailer.name}
               loading="lazy"
               decoding="async"
@@ -61,7 +61,7 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
                   aria-pressed={activeImage === img}
                 >
                   <ThumbImg
-                    src={img}
+                    src={imgUrl(img)}
                     alt={`${trailer.name} - zdjęcie ${idx + 1}`}
                     loading="lazy"
                     decoding="async"
@@ -235,7 +235,7 @@ export default function App() {
       <HeroSection2>
         <HeroBg>
           <HeroBgImg
-            src="/trailers/T1.jpg"
+            src={imgUrl('trailers/T1.jpg')}
             alt="Tabbert Bellini - przyczepa kempingowa"
             fetchPriority="high"
             decoding="async"
