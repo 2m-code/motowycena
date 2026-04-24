@@ -2,7 +2,7 @@
 
 **Branch:** `fix/pre-handoff-blockers`
 **Ostatnia aktualizacja:** 2026-04-24
-**Commity:** 9 (`029796c` → `d5bac54`)
+**Commity:** 10 (`029796c` → `91ba5d4`)
 
 ---
 
@@ -16,6 +16,7 @@
 ~~**P3 drobne** — hero variant switcher usunięty, nav uproszczona, sekcja dlaczego-my usunięta~~
 ~~**Kod/a11y batch** — Logo keyboard nav, dead CSS scroll-margin, MobileNavLink hover, :focus-visible, `<p>`→`<li>` w ul, dead styled components~~
 ~~**Bugi z testów** — `<main>` landmark, menu exit animation, formularz reset po submit, FooterCredit kontrast WCAG~~
+~~**GitHub Pages preview** — `imgUrl()` na wszystkich `src` zdjęć, Vite base `/przyczepy.pl/`, deploy na `2m-code.github.io/przyczepy.pl/`~~
 
 **Metryki po wszystkim:** 0 TS errors · 0 vulns · 130 kB gzip · 1.8 MB dist · 15/15 obrazków 200
 
