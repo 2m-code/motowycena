@@ -59,6 +59,15 @@
 - [x] Sekcja "Dlaczego my" z niespójną nazwą — zastąpiona QuickHighlight bez hash `#dlaczego-my`
 - [x] Sitemap zgodny z aktualnymi `id` sekcji (kempingowe / transportowe / kontakt / polityka-prywatnosci)
 
+### ⚫ Kod/a11y — batch finalny
+- [x] **`Logo` keyboard a11y** — `role="button"` + `tabIndex={0}` + `onKeyDown` (Enter/Space) + `aria-label`
+- [x] **Dead CSS** — `scroll-margin-top: 1rem` usunięty z CampingSection / TransportSection / ContactSection (GlobalStyle `section[id]` miał wyższy specificity i tak wygrywał — te wartości nigdy nie działały)
+- [x] **MobileNavLink hover** — dodany `color: #0066ff` na hover (brak był luką UX)
+- [x] **`:focus` → `:focus-visible`** w FormInput / FormTextarea — border-highlight tylko przy nawigacji klawiaturą, nie przy kliknięciu myszą
+- [x] **`<p>` wewnątrz `<ul>`** w PrivacyPolicy — zamienione na `<li>` (invalid HTML, przeglądarki auto-wyrzucały `<p>` poza listę)
+- [x] **Niewidoczne spacery `‍`** w PrivacyPolicy §7 — dwa `<P>‍</P>` usunięte
+- [x] **5 dead styled components** w PrivacyPolicy — `Lead`, `ContactCard`, `ContactRow`, `ContactKey`, `ContactVal` usunięte (relikty po usuniętej sekcji kontaktowej w polityce)
+
 ### 🧪 Testy (CLI)
 - [x] `tsc --noEmit` czysto
 - [x] `vite build` 408 kB JS / gzip 130 kB, ~2s

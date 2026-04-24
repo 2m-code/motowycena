@@ -167,7 +167,13 @@ export default function App() {
       <HeaderBar>
         <Container>
           <HeaderRow>
-            <Logo onClick={goToMain}>
+            <Logo
+              onClick={goToMain}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && goToMain()}
+              aria-label="Przejdź na stronę główną"
+            >
               <LogoIcon>
                 <Tent size={20} />
               </LogoIcon>
@@ -679,6 +685,11 @@ const MobileNavLink = styled.a`
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-size: 0.875rem;
+  transition: color 150ms ease;
+
+  &:hover {
+    color: #0066ff;
+  }
 `;
 
 const MobileContactLink = styled.a`
@@ -878,7 +889,6 @@ const QuickHighlightItem = styled.span`
 const CampingSection = styled.section`
   padding-top: 6rem;
   padding-bottom: 6rem;
-  scroll-margin-top: 1rem;
   ${containerBase}
 `;
 
@@ -936,7 +946,6 @@ const TransportSection = styled.section`
   background: #ffffff;
   border-top: 1px solid #e2e8f0;
   border-bottom: 1px solid #e2e8f0;
-  scroll-margin-top: 1rem;
 `;
 
 const TransportHeader = styled.div`
@@ -966,7 +975,6 @@ const ContactSection = styled.section`
   padding: 6rem 0;
   background: #1e293b;
   color: #ffffff;
-  scroll-margin-top: 1rem;
 `;
 
 const ContactWrapper = styled.div`
@@ -1144,7 +1152,7 @@ const FormInput = styled.input`
     color: #64748b;
   }
 
-  &:focus {
+  &:focus-visible {
     outline: none;
     border-color: #0066ff;
   }
@@ -1166,7 +1174,7 @@ const FormTextarea = styled.textarea`
     color: #64748b;
   }
 
-  &:focus {
+  &:focus-visible {
     outline: none;
     border-color: #0066ff;
   }
