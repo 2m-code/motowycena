@@ -1,20 +1,29 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Motowycena Rafał Pelczar — landing page
 
-# Run and deploy your AI Studio app
+Strona wypożyczalni przyczep kempingowych i transportowych.
 
-This contains everything you need to run your app locally.
+## Stack
 
-View your app in AI Studio: https://ai.studio/apps/bf35e656-325b-41f7-80c4-10af7ae9e746
+- React 19 + TypeScript
+- Vite 6
+- styled-components
+- motion (animacje)
+- lucide-react (ikony)
 
-## Run Locally
+## Uruchomienie lokalne
 
-**Prerequisites:**  Node.js
+Wymagania: Node.js 18+.
 
+```bash
+npm install
+npm run dev
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Serwer dev startuje na `http://localhost:3000`.
+
+## Pozostałe skrypty
+
+- `npm run build` — build produkcyjny do `dist/`
+- `npm run preview` — podgląd zbudowanej wersji
+- `npm run lint` — sprawdzenie typów (`tsc --noEmit`)
+- `npm run clean` — usunięcie `dist/`
