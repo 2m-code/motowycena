@@ -1,6 +1,6 @@
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Tent, Truck, MapPin, Phone, Mail, CheckCircle2, Menu, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import styled, { css } from 'styled-components';
 import { CAMPERS, TRANSPORTS, type Trailer } from './data/trailers';
 import { media } from './styles/theme';
@@ -41,7 +41,8 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
             <TrailerMainImg
               src={activeImage}
               alt={trailer.name}
-              referrerPolicy="no-referrer"
+              loading="lazy"
+              decoding="async"
             />
             <TrailerBadge style={{ backgroundColor: badgeColor }}>
               {badge}
@@ -49,18 +50,21 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
           </TrailerImageWrap>
 
           {trailer.images.length > 1 && (
-            <ThumbGrid>
+            <ThumbGrid $count={trailer.images.length}>
               {trailer.images.map((img, idx) => (
                 <ThumbButton
                   key={idx}
                   type="button"
                   onClick={() => setActiveImage(img)}
                   $active={activeImage === img}
+                  aria-label={`Pokaż zdjęcie ${idx + 1} z ${trailer.images.length}`}
+                  aria-pressed={activeImage === img}
                 >
                   <ThumbImg
                     src={img}
-                    alt={`${trailer.name} ${idx + 1}`}
-                    referrerPolicy="no-referrer"
+                    alt={`${trailer.name} - zdjęcie ${idx + 1}`}
+                    loading="lazy"
+                    decoding="async"
                   />
                 </ThumbButton>
               ))}
@@ -76,7 +80,7 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
           </TrailerHeader>
           <TrailerDescription>{trailer.description}</TrailerDescription>
           <TrailerFooter>
-            <TrailerCta href="tel:+481509146666">Zadzwoń</TrailerCta>
+            <TrailerCta href="tel:+48509146666">Zadzwoń</TrailerCta>
           </TrailerFooter>
         </TrailerDetails>
       </TrailerGrid>
@@ -87,6 +91,28 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [view, setView] = useState<View>(() => getViewFromHash());
+  const [formName, setFormName] = useState('');
+  const [formPhone, setFormPhone] = useState('');
+  const [formMessage, setFormMessage] = useState('');
+
+  const handleContactSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const subject = `Zapytanie o wynajem - ${formName || 'formularz'}`;
+    const body = [
+      `Imię i nazwisko: ${formName}`,
+      `Telefon: ${formPhone}`,
+      '',
+      'Wiadomość:',
+      formMessage,
+    ].join('\n');
+    const mailto = `mailto:biuro@motowycena.pl?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
+    setFormName('');
+    setFormPhone('');
+    setFormMessage('');
+  };
 
   useEffect(() => {
     const onHashChange = () => {
@@ -130,7 +156,9 @@ export default function App() {
     <PageWrapper>
       {/* BACKGROUND WATERMARK */}
       <WatermarkFixed>
-        <WatermarkText>2mcode.pl</WatermarkText>
+        {Array.from({ length: 12 }).map((_, i) => (
+          <WatermarkText key={i}>2mcode.pl</WatermarkText>
+        ))}
       </WatermarkFixed>
 
       {/* FLOATING CORNER WATERMARK */}
@@ -144,7 +172,13 @@ export default function App() {
       <HeaderBar>
         <Container>
           <HeaderRow>
-            <Logo onClick={goToMain}>
+            <Logo
+              onClick={goToMain}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && goToMain()}
+              aria-label="Przejdź na stronę główną"
+            >
               <LogoIcon>
                 <Tent size={20} />
               </LogoIcon>
@@ -157,33 +191,42 @@ export default function App() {
               <NavContactLink href="#kontakt">Kontakt</NavContactLink>
             </DesktopNav>
 
-            <MobileMenuButton onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <MobileMenuButton
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label={isMenuOpen ? 'Zamknij menu' : 'Otwórz menu'}
+              aria-expanded={isMenuOpen}
+            >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </MobileMenuButton>
           </HeaderRow>
         </Container>
 
         {/* Mobile menu */}
-        {isMenuOpen && (
-          <MobileMenu
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <MobileMenuInner>
-              <MobileNavLink href="#kempingowe" onClick={() => setIsMenuOpen(false)}>
-                Przyczepy Kempingowe
-              </MobileNavLink>
-              <MobileNavLink href="#transportowe" onClick={() => setIsMenuOpen(false)}>
-                Przyczepy Transportowe
-              </MobileNavLink>
-              <MobileContactLink href="#kontakt" onClick={() => setIsMenuOpen(false)}>
-                Kontakt
-              </MobileContactLink>
-            </MobileMenuInner>
-          </MobileMenu>
-        )}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <MobileMenu
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <MobileMenuInner>
+                <MobileNavLink href="#kempingowe" onClick={() => setIsMenuOpen(false)}>
+                  Przyczepy Kempingowe
+                </MobileNavLink>
+                <MobileNavLink href="#transportowe" onClick={() => setIsMenuOpen(false)}>
+                  Przyczepy Transportowe
+                </MobileNavLink>
+                <MobileContactLink href="#kontakt" onClick={() => setIsMenuOpen(false)}>
+                  Kontakt
+                </MobileContactLink>
+              </MobileMenuInner>
+            </MobileMenu>
+          )}
+        </AnimatePresence>
       </HeaderBar>
 
+      <MainContent>
       {view === 'privacy' ? (
         <PrivacyPolicy onBack={goToMain} />
       ) : (
@@ -194,7 +237,8 @@ export default function App() {
           <HeroBgImg
             src="/trailers/T1.jpg"
             alt="Tabbert Bellini - przyczepa kempingowa"
-            referrerPolicy="no-referrer"
+            fetchPriority="high"
+            decoding="async"
           />
           <HeroDarkGradientR />
           <HeroDarkGradientT />
@@ -307,13 +351,13 @@ export default function App() {
               </ContactLead>
 
               <ContactList>
-                <ContactLink href="tel:+48123456789">
+                <ContactLink href="tel:+48509146666">
                   <ContactIconCircle>
                     <Phone size={20} />
                   </ContactIconCircle>
                   <div>
                     <ContactLabel>Bezpośredni telefon</ContactLabel>
-                    <ContactValue>+48509146666</ContactValue>
+                    <ContactValue>+48 509 146 666</ContactValue>
                   </div>
                 </ContactLink>
 
@@ -340,20 +384,43 @@ export default function App() {
             </ContactLeft>
 
             <ContactRight>
-              <ContactForm onSubmit={(e) => e.preventDefault()}>
+              <ContactForm onSubmit={handleContactSubmit}>
                 <FormRow>
-                  <FormLabel>Imię i nazwisko</FormLabel>
-                  <FormInput type="text" placeholder="np. Anna Nowak" />
+                  <FormLabel htmlFor="contact-name">Imię i nazwisko</FormLabel>
+                  <FormInput
+                    id="contact-name"
+                    name="name"
+                    type="text"
+                    autoComplete="name"
+                    placeholder="np. Anna Nowak"
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    required
+                  />
                 </FormRow>
                 <FormRow>
-                  <FormLabel>Telefon</FormLabel>
-                  <FormInput type="tel" placeholder="+48 XXX XXX XXX" />
+                  <FormLabel htmlFor="contact-phone">Telefon</FormLabel>
+                  <FormInput
+                    id="contact-phone"
+                    name="phone"
+                    type="tel"
+                    autoComplete="tel"
+                    placeholder="+48 XXX XXX XXX"
+                    value={formPhone}
+                    onChange={(e) => setFormPhone(e.target.value)}
+                    required
+                  />
                 </FormRow>
                 <FormRow>
-                  <FormLabel>O co pytasz?</FormLabel>
+                  <FormLabel htmlFor="contact-message">O co pytasz?</FormLabel>
                   <FormTextarea
+                    id="contact-message"
+                    name="message"
                     rows={4}
                     placeholder="Interesuje mnie Tabbert Bellini na weekend majowy..."
+                    value={formMessage}
+                    onChange={(e) => setFormMessage(e.target.value)}
+                    required
                   />
                 </FormRow>
                 <FormSubmit type="submit">Wyślij Wiadomość</FormSubmit>
@@ -364,6 +431,7 @@ export default function App() {
       </ContactSection>
       </>
       )}
+      </MainContent>
 
       {/* FOOTER */}
       <Footer>
@@ -374,7 +442,6 @@ export default function App() {
               <FooterLogoText>Motowycena Rafał Pelczar</FooterLogoText>
             </FooterLogo>
             <FooterLinks>
-              <FooterLink href="#">Regulamin Wynajmu</FooterLink>
               <FooterLink href={PRIVACY_HASH}>Polityka Prywatności</FooterLink>
             </FooterLinks>
           </FooterTop>
@@ -435,6 +502,10 @@ const PageWrapper = styled.div`
   position: relative;
 `;
 
+const MainContent = styled.main`
+  display: contents;
+`;
+
 /* --------- Watermark ---------- */
 const WatermarkFixed = styled.div`
   position: fixed;
@@ -442,20 +513,24 @@ const WatermarkFixed = styled.div`
   z-index: 9999;
   pointer-events: none;
   user-select: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 0;
 `;
 
 const WatermarkText = styled.span`
-  font-size: 20vw;
+  font-size: 7vw;
   font-weight: 900;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.02em;
   color: #1e293b;
-  opacity: 0.1;
-  transform: rotate(-45deg);
-  mix-blend-mode: multiply;
+  opacity: 0.12;
+  transform: rotate(-35deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
 `;
 
 const CornerWatermark = styled.div`
@@ -468,14 +543,14 @@ const CornerWatermark = styled.div`
 `;
 
 const CornerBadge = styled.span`
-  background: #ffffff;
+  background: #0f172a;
   padding: 0.75rem 1.25rem;
   border-radius: 12px;
-  border: 2px solid #e2e8f0;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 2px solid #0066ff;
+  box-shadow: 0 8px 32px -4px rgba(0, 102, 255, 0.5);
   font-size: 13px;
   font-weight: 900;
-  color: #1e293b;
+  color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   display: flex;
@@ -629,6 +704,11 @@ const MobileNavLink = styled.a`
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-size: 0.875rem;
+  transition: color 150ms ease;
+
+  &:hover {
+    color: #0066ff;
+  }
 `;
 
 const MobileContactLink = styled.a`
@@ -828,7 +908,6 @@ const QuickHighlightItem = styled.span`
 const CampingSection = styled.section`
   padding-top: 6rem;
   padding-bottom: 6rem;
-  scroll-margin-top: 1rem;
   ${containerBase}
 `;
 
@@ -886,7 +965,6 @@ const TransportSection = styled.section`
   background: #ffffff;
   border-top: 1px solid #e2e8f0;
   border-bottom: 1px solid #e2e8f0;
-  scroll-margin-top: 1rem;
 `;
 
 const TransportHeader = styled.div`
@@ -916,7 +994,6 @@ const ContactSection = styled.section`
   padding: 6rem 0;
   background: #1e293b;
   color: #ffffff;
-  scroll-margin-top: 1rem;
 `;
 
 const ContactWrapper = styled.div`
@@ -1094,7 +1171,7 @@ const FormInput = styled.input`
     color: #64748b;
   }
 
-  &:focus {
+  &:focus-visible {
     outline: none;
     border-color: #0066ff;
   }
@@ -1116,7 +1193,7 @@ const FormTextarea = styled.textarea`
     color: #64748b;
   }
 
-  &:focus {
+  &:focus-visible {
     outline: none;
     border-color: #0066ff;
   }
@@ -1243,7 +1320,7 @@ const FooterCopy = styled.p`
 
 const FooterCredit = styled.p`
   font-size: 11px;
-  color: #64748b;
+  color: #94a3b8;
   margin: 0;
   letter-spacing: 0.05em;
   line-height: 1.5;
@@ -1329,9 +1406,9 @@ const TrailerBadge = styled.div`
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 `;
 
-const ThumbGrid = styled.div`
+const ThumbGrid = styled.div<{ $count: number }>`
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(${({ $count }) => Math.min($count, 6)}, minmax(0, 1fr));
   gap: 0.5rem;
 `;
 

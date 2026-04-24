@@ -111,23 +111,17 @@ Przyczyną zmian mogą być rozwój technologii internetowej, zmiany w powszechn
             <H2>TECHNOLOGIE</H2>
             <P>1. Administrator stosuje następujące technologie obserwujące działania podejmowane przez Użytkownika w ramach Strony:</P>
             <Ul>
-              <p>
+              <li>
                 1.1. Wbudowany kod Google Analytics - w celu analizy statystyk Strony. Google Analytics korzysta z własnych plików cookies do analizowania działań i zachowań Użytkowników Strony. Pliki te służą do przechowywania informacji, np. z jakiej strony Użytkownik trafił na bieżącą stronę internetową. Pomagają udoskonalić Stronę.
-              </p>
+              </li>
             </Ul>
             <P>
               2. W celu korzystania ze strony internetowej https://www.motowycena.pl/ niezbędne jest posiadanie:
             </P>
             <Ul>
-              <p>
-                2.1. Urządzenia z dostępem do sieci Internet
-              </p>
-              <p>
-                2.2. Aktywnej skrzynki elektronicznej odbierającej wiadomości e-mail
-              </p>
-              <p>
-                2.3. Przeglądarki internetowej umożliwiającej wyświetlanie stron www.
-              </p>
+              <li>2.1. Urządzenia z dostępem do sieci Internet</li>
+              <li>2.2. Aktywnej skrzynki elektronicznej odbierającej wiadomości e-mail</li>
+              <li>2.3. Przeglądarki internetowej umożliwiającej wyświetlanie stron www.</li>
             </Ul>
           </Section>
 
@@ -158,8 +152,6 @@ Przyczyną zmian mogą być rozwój technologii internetowej, zmiany w powszechn
             <P>Korzystając z menu „Safari” wybierz „Preferencje” a w nim zakładkę „Prywatność”. Zakładka ta zawiera rozbudowane opcje dotyczące plików cookie.</P>
             <P><Strong>Telefony komórkowe, tablety oraz inne urządzenia mobilne</Strong></P>
             <P>Każdy rodzaj urządzenia mobilnego, może obsługiwać taką funkcjonalność w inny sposób zależnie od rodzaju urządzenia i wykorzystywanej platformy. Dlatego należy zapoznać się z ustawieniami prywatności w pliku pomocy, dokumentacji lub instrukcji obsługi danego urządzenia lub systemu operacyjnego.</P>
-            <P>‍</P>
-            <P>‍</P>
             <P>Informacje o usługach przedstawione na stronie https://www.motowycena.pl/ obowiązują od 01.01.2022r</P>
           </Section>
 
@@ -187,7 +179,7 @@ Przyczyną zmian mogą być rozwój technologii internetowej, zmiany w powszechn
 
 /* --------- Styles ---------- */
 
-const Wrapper = styled.main`
+const Wrapper = styled.div`
   background: #f8fafc;
   color: #1e293b;
   min-height: 100vh;
@@ -293,17 +285,6 @@ const Title = styled.h1`
   }
 `;
 
-const Lead = styled.p`
-  color: #475569;
-  font-size: 1rem;
-  line-height: 1.7;
-  max-width: 42rem;
-
-  ${media.md} {
-    font-size: 1.125rem;
-  }
-`;
-
 const Content = styled(motion.article)`
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -376,49 +357,6 @@ const Ul = styled.ul`
     font-size: 16px;
     padding-left: 1.5rem;
   }
-`;
-
-const ContactCard = styled.div`
-  margin-top: 1.25rem;
-  padding: 1.25rem 1.5rem;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-`;
-
-const ContactRow = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-
-  ${media.sm} {
-    flex-direction: row;
-    gap: 1rem;
-    align-items: baseline;
-  }
-`;
-
-const ContactKey = styled.span`
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #94a3b8;
-  flex-shrink: 0;
-
-  ${media.sm} {
-    width: 5rem;
-  }
-`;
-
-const ContactVal = styled.span`
-  font-size: 15px;
-  font-weight: 600;
-  color: #1e293b;
-  overflow-wrap: anywhere;
 `;
 
 const BottomBackRow = styled.div`
