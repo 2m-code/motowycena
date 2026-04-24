@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { Tent, Truck, MapPin, Phone, Mail, CheckCircle2, Menu, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import styled, { css } from 'styled-components';
 import { CAMPERS, TRANSPORTS, type Trailer } from './data/trailers';
 import { media } from './styles/theme';
@@ -76,7 +76,7 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
           </TrailerHeader>
           <TrailerDescription>{trailer.description}</TrailerDescription>
           <TrailerFooter>
-            <TrailerCta href="tel:+481509146666">Zadzwoń</TrailerCta>
+            <TrailerCta href="tel:+48509146666">Zadzwoń</TrailerCta>
           </TrailerFooter>
         </TrailerDetails>
       </TrailerGrid>
@@ -87,6 +87,25 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [view, setView] = useState<View>(() => getViewFromHash());
+  const [formName, setFormName] = useState('');
+  const [formPhone, setFormPhone] = useState('');
+  const [formMessage, setFormMessage] = useState('');
+
+  const handleContactSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const subject = `Zapytanie o wynajem - ${formName || 'formularz'}`;
+    const body = [
+      `Imię i nazwisko: ${formName}`,
+      `Telefon: ${formPhone}`,
+      '',
+      'Wiadomość:',
+      formMessage,
+    ].join('\n');
+    const mailto = `mailto:biuro@motowycena.pl?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
+  };
 
   useEffect(() => {
     const onHashChange = () => {
@@ -307,13 +326,13 @@ export default function App() {
               </ContactLead>
 
               <ContactList>
-                <ContactLink href="tel:+48123456789">
+                <ContactLink href="tel:+48509146666">
                   <ContactIconCircle>
                     <Phone size={20} />
                   </ContactIconCircle>
                   <div>
                     <ContactLabel>Bezpośredni telefon</ContactLabel>
-                    <ContactValue>+48509146666</ContactValue>
+                    <ContactValue>+48 509 146 666</ContactValue>
                   </div>
                 </ContactLink>
 
@@ -340,20 +359,43 @@ export default function App() {
             </ContactLeft>
 
             <ContactRight>
-              <ContactForm onSubmit={(e) => e.preventDefault()}>
+              <ContactForm onSubmit={handleContactSubmit}>
                 <FormRow>
-                  <FormLabel>Imię i nazwisko</FormLabel>
-                  <FormInput type="text" placeholder="np. Anna Nowak" />
+                  <FormLabel htmlFor="contact-name">Imię i nazwisko</FormLabel>
+                  <FormInput
+                    id="contact-name"
+                    name="name"
+                    type="text"
+                    autoComplete="name"
+                    placeholder="np. Anna Nowak"
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    required
+                  />
                 </FormRow>
                 <FormRow>
-                  <FormLabel>Telefon</FormLabel>
-                  <FormInput type="tel" placeholder="+48 XXX XXX XXX" />
+                  <FormLabel htmlFor="contact-phone">Telefon</FormLabel>
+                  <FormInput
+                    id="contact-phone"
+                    name="phone"
+                    type="tel"
+                    autoComplete="tel"
+                    placeholder="+48 XXX XXX XXX"
+                    value={formPhone}
+                    onChange={(e) => setFormPhone(e.target.value)}
+                    required
+                  />
                 </FormRow>
                 <FormRow>
-                  <FormLabel>O co pytasz?</FormLabel>
+                  <FormLabel htmlFor="contact-message">O co pytasz?</FormLabel>
                   <FormTextarea
+                    id="contact-message"
+                    name="message"
                     rows={4}
                     placeholder="Interesuje mnie Tabbert Bellini na weekend majowy..."
+                    value={formMessage}
+                    onChange={(e) => setFormMessage(e.target.value)}
+                    required
                   />
                 </FormRow>
                 <FormSubmit type="submit">Wyślij Wiadomość</FormSubmit>
@@ -374,7 +416,6 @@ export default function App() {
               <FooterLogoText>Motowycena Rafał Pelczar</FooterLogoText>
             </FooterLogo>
             <FooterLinks>
-              <FooterLink href="#">Regulamin Wynajmu</FooterLink>
               <FooterLink href={PRIVACY_HASH}>Polityka Prywatności</FooterLink>
             </FooterLinks>
           </FooterTop>
