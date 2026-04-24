@@ -41,7 +41,8 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
             <TrailerMainImg
               src={activeImage}
               alt={trailer.name}
-              referrerPolicy="no-referrer"
+              loading="lazy"
+              decoding="async"
             />
             <TrailerBadge style={{ backgroundColor: badgeColor }}>
               {badge}
@@ -59,8 +60,9 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
                 >
                   <ThumbImg
                     src={img}
-                    alt={`${trailer.name} ${idx + 1}`}
-                    referrerPolicy="no-referrer"
+                    alt={`${trailer.name} - zdjęcie ${idx + 1}`}
+                    loading="lazy"
+                    decoding="async"
                   />
                 </ThumbButton>
               ))}
@@ -213,7 +215,8 @@ export default function App() {
           <HeroBgImg
             src="/trailers/T1.jpg"
             alt="Tabbert Bellini - przyczepa kempingowa"
-            referrerPolicy="no-referrer"
+            fetchPriority="high"
+            decoding="async"
           />
           <HeroDarkGradientR />
           <HeroDarkGradientT />
