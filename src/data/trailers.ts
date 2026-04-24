@@ -6,6 +6,8 @@ export type Trailer = {
   images: string[];
 };
 
+export const imgUrl = (path: string) => `${import.meta.env.BASE_URL}${path}`;
+
 export const CAMPERS: Trailer[] = [
   {
     id: 1,
@@ -58,12 +60,12 @@ Kaucja zwrotna: 1500 zł
 Obowiązuje opłata serwisowa 250zł (obejmuje chemię do toalety, pełną butlę gazową, oraz papier toaletowy), opłata nie jest pobierana za wynajem powyżej 5 dni.
 Wystawiamy faktury VAT lub paragon.`,
     images: [
-      "/trailers/T1.jpg",
-      "/trailers/T2.jpg",
-      "/trailers/T3.jpg",
-      "/trailers/T4.jpg",
-      "/trailers/T5.jpg",
-      "/trailers/T6.jpg",
+      "trailers/T1.jpg",
+      "trailers/T2.jpg",
+      "trailers/T3.jpg",
+      "trailers/T4.jpg",
+      "trailers/T5.jpg",
+      "trailers/T6.jpg",
     ],
   },
   {
@@ -123,11 +125,11 @@ Możliwość pomocy w transporcie lub podstawieniu przyczepy w wybrane miejsce -
 Wystawiamy paragon lub fakturę VAT.
 W ofercie posiadamy również inne przyczepy.`,
     images: [
-      "/trailers/lunar1.jpg",
-      "/trailers/lunar2.jpg",
-      "/trailers/lunar3.jpg",
-      "/trailers/lunar4.jpg",
-      "/trailers/lunar5.jpg",
+      "trailers/lunar1.jpg",
+      "trailers/lunar2.jpg",
+      "trailers/lunar3.jpg",
+      "trailers/lunar4.jpg",
+      "trailers/lunar5.jpg",
     ],
   },
 ];
@@ -163,7 +165,7 @@ klasyków
 quadów i mniejszych maszyn
 
 Wystawiamy faktury VAT lub paragon.`,
-    images: ["/trailers/L1.jpg", "/trailers/L2.jpg"],
+    images: ["trailers/L1.jpg", "trailers/L2.jpg"],
   },
   {
     id: 2,
@@ -173,6 +175,6 @@ Wystawiamy faktury VAT lub paragon.`,
 Wymiary powierzchni załadunku: 225x148,5x31cm
 Przyczepa posiada korytko do załadunku, a także jest uchylna.
 Wynajem doba 60zł , możliwość wystawienia faktury VAT.`,
-    images: ["/trailers/P1.jpg", "/trailers/P2.jpg"],
+    images: ["trailers/P1.jpg", "trailers/P2.jpg"],
   },
 ];
