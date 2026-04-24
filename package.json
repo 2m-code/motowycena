@@ -20,7 +20,9 @@
     "vite": "^6.2.0"
   },
   "devDependencies": {
+    "@napi-rs/canvas": "^0.1.99",
     "@types/node": "^22.14.0",
+    "gh-pages": "^6.3.0",
     "typescript": "~5.8.2"
   }
 }
