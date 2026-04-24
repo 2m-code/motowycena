@@ -906,9 +906,13 @@ const QuickHighlightItem = styled.span`
 
 /* ---------- Section shared ---------- */
 const CampingSection = styled.section`
-  padding-top: 6rem;
+  padding-top: 2rem;
   padding-bottom: 6rem;
   ${containerBase}
+
+  ${media.md} {
+    padding-top: 4rem;
+  }
 `;
 
 const SectionHeader = styled.div`
@@ -961,10 +965,14 @@ const TrailerList = styled.div`
 
 /* ---------- Transport ---------- */
 const TransportSection = styled.section`
-  padding: 6rem 0;
+  padding: 2rem 0 6rem;
   background: #ffffff;
   border-top: 1px solid #e2e8f0;
   border-bottom: 1px solid #e2e8f0;
+
+  ${media.md} {
+    padding-top: 4rem;
+  }
 `;
 
 const TransportHeader = styled.div`
@@ -991,9 +999,13 @@ const TransportIconBox = styled.div`
 
 /* ---------- Contact ---------- */
 const ContactSection = styled.section`
-  padding: 6rem 0;
+  padding: 2rem 0 6rem;
   background: #1e293b;
   color: #ffffff;
+
+  ${media.md} {
+    padding-top: 4rem;
+  }
 `;
 
 const ContactWrapper = styled.div`
