@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Tent, Truck, MapPin, Phone, Mail, CheckCircle2, Menu, X } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import styled, { css } from 'styled-components';
@@ -109,6 +109,9 @@ export default function App() {
       subject
     )}&body=${encodeURIComponent(body)}`;
     window.location.href = mailto;
+    setFormName('');
+    setFormPhone('');
+    setFormMessage('');
   };
 
   useEffect(() => {
@@ -197,26 +200,31 @@ export default function App() {
         </Container>
 
         {/* Mobile menu */}
-        {isMenuOpen && (
-          <MobileMenu
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <MobileMenuInner>
-              <MobileNavLink href="#kempingowe" onClick={() => setIsMenuOpen(false)}>
-                Przyczepy Kempingowe
-              </MobileNavLink>
-              <MobileNavLink href="#transportowe" onClick={() => setIsMenuOpen(false)}>
-                Przyczepy Transportowe
-              </MobileNavLink>
-              <MobileContactLink href="#kontakt" onClick={() => setIsMenuOpen(false)}>
-                Kontakt
-              </MobileContactLink>
-            </MobileMenuInner>
-          </MobileMenu>
-        )}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <MobileMenu
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <MobileMenuInner>
+                <MobileNavLink href="#kempingowe" onClick={() => setIsMenuOpen(false)}>
+                  Przyczepy Kempingowe
+                </MobileNavLink>
+                <MobileNavLink href="#transportowe" onClick={() => setIsMenuOpen(false)}>
+                  Przyczepy Transportowe
+                </MobileNavLink>
+                <MobileContactLink href="#kontakt" onClick={() => setIsMenuOpen(false)}>
+                  Kontakt
+                </MobileContactLink>
+              </MobileMenuInner>
+            </MobileMenu>
+          )}
+        </AnimatePresence>
       </HeaderBar>
 
+      <MainContent>
       {view === 'privacy' ? (
         <PrivacyPolicy onBack={goToMain} />
       ) : (
@@ -421,6 +429,7 @@ export default function App() {
       </ContactSection>
       </>
       )}
+      </MainContent>
 
       {/* FOOTER */}
       <Footer>
@@ -489,6 +498,10 @@ const PageWrapper = styled.div`
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
   padding-bottom: 0;
   position: relative;
+`;
+
+const MainContent = styled.main`
+  display: contents;
 `;
 
 /* --------- Watermark ---------- */
@@ -1301,7 +1314,7 @@ const FooterCopy = styled.p`
 
 const FooterCredit = styled.p`
   font-size: 11px;
-  color: #64748b;
+  color: #94a3b8;
   margin: 0;
   letter-spacing: 0.05em;
   line-height: 1.5;

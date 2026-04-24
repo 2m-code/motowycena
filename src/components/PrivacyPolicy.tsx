@@ -179,7 +179,7 @@ Przyczyną zmian mogą być rozwój technologii internetowej, zmiany w powszechn
 
 /* --------- Styles ---------- */
 
-const Wrapper = styled.main`
+const Wrapper = styled.div`
   background: #f8fafc;
   color: #1e293b;
   min-height: 100vh;

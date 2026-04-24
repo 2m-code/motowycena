@@ -59,6 +59,12 @@
 - [x] Sekcja "Dlaczego my" z niespójną nazwą — zastąpiona QuickHighlight bez hash `#dlaczego-my`
 - [x] Sitemap zgodny z aktualnymi `id` sekcji (kempingowe / transportowe / kontakt / polityka-prywatnosci)
 
+### 🔵 Testy runda 3 — bugi naprawione
+- [x] **`<main>` landmark** — `PageWrapper` (div) → `MainContent` (main); `PrivacyPolicy` `Wrapper` z `main` → `div` (no nested main). WCAG 2.1 landmark fix.
+- [x] **Mobile menu exit animation** — `AnimatePresence` + `exit={{ opacity: 0, y: -10 }}` + `transition: 0.2s` (było instant disappear)
+- [x] **Formularz reset po submit** — `setFormName/Phone/Message('')` po `window.location.href = mailto`
+- [x] **FooterCredit kontrast WCAG AA** — `#64748b` na `#0f172a` = 3.75:1 (fail) → `#94a3b8` = 6.96:1 ✅
+
 ### ⚫ Kod/a11y — batch finalny
 - [x] **`Logo` keyboard a11y** — `role="button"` + `tabIndex={0}` + `onKeyDown` (Enter/Space) + `aria-label`
 - [x] **Dead CSS** — `scroll-margin-top: 1rem` usunięty z CampingSection / TransportSection / ContactSection (GlobalStyle `section[id]` miał wyższy specificity i tak wygrywał — te wartości nigdy nie działały)
