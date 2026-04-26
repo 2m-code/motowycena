@@ -1,8 +1,26 @@
 # Progress — przygotowanie strony do oddania klientowi
 
-**Branch:** `fix/pre-handoff-blockers`
-**Ostatnia aktualizacja:** 2026-04-24
-**Commity:** 10 (`029796c` → `91ba5d4`)
+**Branch:** `main`
+**Ostatnia aktualizacja:** 2026-04-26
+**Commity:** 10 (`029796c` → `91ba5d4`) + batch poprawek klienta 2026-04-26
+
+---
+
+## 🔁 Batch poprawek od klienta (2026-04-26)
+
+**Bezpieczne zmiany — zrobione:**
+- ✅ Laweta: `Wycena indywidualna` → `80 zł / doba` (`trailers.ts`)
+- ✅ Email wszędzie w UI: `biuro@motowycena.pl` → `biuro@eprzyczepy.eu`
+- ✅ Telefon wszędzie w UI: `+48 509 146 666` → `+48 692 376 595`
+- ✅ Adres publiczny: `Ul. Spacerowa 10, 63-430 Garki` → `Ul. Spacerowa, 63-430 Garki`
+- ✅ Brand top-left + footer + copyright: `Motowycena Rafał Pelczar` → `EPRZYCZEPY.EU`
+- ✅ Hero subtitle — nowa kopia 1:1: "Wynajmujemy komfortowe przyczepy kempingowe znanych marek takich jak Tabbert, Lunar, Dethleffs."
+- ✅ `metadata.json` name → `EPRZYCZEPY.EU`
+
+**Czeka na decyzję klienta (NIE ruszone):**
+- 🔲 **Formularz kontaktowy** — klient chce wysyłkę bezpośrednio, nie `mailto:`. Strona statyczna (GH Pages) — wymaga zewnętrznej usługi (Formspree free 50/mies., Web3Forms, EmailJS). Decyzja: która usługa + endpoint.
+- 🔲 **Domena nowa (eprzyczepy.eu?)** — `index.html` ma `canonical`, `og:url`, JSON-LD `url` z `https://www.motowycena.pl/`. Po decyzji aktualizujemy SEO + JSON-LD `streetAddress` i `email`/`telephone`.
+- 🔲 **Privacy Policy** — pełno odwołań do `motowycena.pl` i `MOTOWYCENA RAFAŁ PELCZAR ul.Spacerowa 10`. To dokument prawny — lepiej nie ruszać bez wyraźnej zgody klienta (Administrator to nazwa firmy w CEIDG).
 
 ---
 
