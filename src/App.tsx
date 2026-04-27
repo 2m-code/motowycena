@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Tent, Truck, MapPin, Phone, Mail, CheckCircle2, Menu, X } from 'lucide-react';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import styled, { css } from 'styled-components';
 import { CAMPERS, TRANSPORTS, imgUrl, type Trailer } from './data/trailers';
 import { media } from './styles/theme';
@@ -9,6 +9,35 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 
 const PRIVACY_HASH = '#polityka-prywatnosci';
 type View = 'main' | 'privacy';
+
+const TURNSTILE_SITE_KEY = process.env.TURNSTILE_SITE_KEY ?? '';
+
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (
+        el: HTMLElement,
+        opts: {
+          sitekey: string;
+          callback: (token: string) => void;
+          'error-callback'?: () => void;
+          'expired-callback'?: () => void;
+          theme?: 'light' | 'dark' | 'auto';
+        }
+      ) => string;
+      reset: (id?: string) => void;
+    };
+  }
+}
+
+const FORM_ERRORS: Record<string, string> = {
+  rate_limited: 'Zbyt wiele prób. Spróbuj ponownie za kilkanaście minut.',
+  consent_required: 'Zaznacz zgodę na przetwarzanie danych.',
+  captcha_required: 'Potwierdź, że nie jesteś botem.',
+  captcha_failed: 'Weryfikacja captcha nie powiodła się. Odśwież stronę.',
+  invalid_input: 'Sprawdź poprawność pól formularza.',
+  send_failed: 'Nie udało się wysłać wiadomości. Spróbuj ponownie lub zadzwoń.',
+};
 
 function getViewFromHash(): View {
   return typeof window !== 'undefined' && window.location.hash === PRIVACY_HASH
@@ -94,7 +123,43 @@ export default function App() {
   const [formName, setFormName] = useState('');
   const [formPhone, setFormPhone] = useState('');
   const [formMessage, setFormMessage] = useState('');
+  const [formConsent, setFormConsent] = useState(false);
   const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [formErrorCode, setFormErrorCode] = useState<string>('send_failed');
+  const turnstileRef = useRef<HTMLDivElement | null>(null);
+  const turnstileWidgetId = useRef<string | null>(null);
+  const turnstileToken = useRef<string>('');
+
+  useEffect(() => {
+    if (!TURNSTILE_SITE_KEY) return;
+    const renderWidget = () => {
+      if (!window.turnstile || !turnstileRef.current || turnstileWidgetId.current) return;
+      turnstileWidgetId.current = window.turnstile.render(turnstileRef.current, {
+        sitekey: TURNSTILE_SITE_KEY,
+        theme: 'dark',
+        callback: (token) => { turnstileToken.current = token; },
+        'expired-callback': () => { turnstileToken.current = ''; },
+        'error-callback': () => { turnstileToken.current = ''; },
+      });
+    };
+    if (window.turnstile) {
+      renderWidget();
+      return;
+    }
+    const existing = document.querySelector<HTMLScriptElement>('script[data-turnstile]');
+    if (existing) {
+      existing.addEventListener('load', renderWidget);
+      return () => existing.removeEventListener('load', renderWidget);
+    }
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+    script.async = true;
+    script.defer = true;
+    script.dataset.turnstile = 'true';
+    script.addEventListener('load', renderWidget);
+    document.head.appendChild(script);
+    return () => script.removeEventListener('load', renderWidget);
+  }, []);
 
   const handleContactSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -106,37 +171,44 @@ export default function App() {
       setFormName('');
       setFormPhone('');
       setFormMessage('');
+      setFormConsent(false);
+      return;
+    }
+    if (TURNSTILE_SITE_KEY && !turnstileToken.current) {
+      setFormErrorCode('captcha_required');
+      setFormStatus('error');
       return;
     }
     setFormStatus('sending');
-    const subject = `Zapytanie o wynajem - ${formName || 'formularz'}`;
     try {
-      const res = await fetch('https://api.web3forms.com/submit', {
+      const res = await fetch('/api/contact', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          access_key: '1ff2a645-8eb8-42c4-962a-d9dfa9a4b15a',
-          subject,
-          from_name: 'Formularz przyczepy.pl',
           name: formName,
           phone: formPhone,
           message: formMessage,
-          botcheck: '',
+          website: '',
+          consent: formConsent,
+          turnstileToken: turnstileToken.current,
         }),
       });
-      const data = await res.json().catch(() => null);
-      if (!res.ok || !data || data.success !== true) {
-        throw new Error('Web3Forms failed');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        throw new Error(typeof data.error === 'string' ? data.error : 'send_failed');
       }
       setFormStatus('success');
       setFormName('');
       setFormPhone('');
       setFormMessage('');
-    } catch {
+      setFormConsent(false);
+      turnstileToken.current = '';
+      window.turnstile?.reset(turnstileWidgetId.current ?? undefined);
+    } catch (err) {
+      setFormErrorCode(err instanceof Error ? err.message : 'send_failed');
       setFormStatus('error');
+      turnstileToken.current = '';
+      window.turnstile?.reset(turnstileWidgetId.current ?? undefined);
     }
   };
 
@@ -455,6 +527,21 @@ export default function App() {
                     required
                   />
                 </FormRow>
+                <ConsentRow>
+                  <ConsentCheckbox
+                    type="checkbox"
+                    id="contact-consent"
+                    checked={formConsent}
+                    onChange={(e) => setFormConsent(e.target.checked)}
+                    disabled={formStatus === 'sending'}
+                    required
+                  />
+                  <ConsentLabel htmlFor="contact-consent">
+                    Wyrażam zgodę na przetwarzanie moich danych osobowych w celu odpowiedzi na zapytanie.{' '}
+                    <a href={PRIVACY_HASH}>Polityka prywatności</a>.
+                  </ConsentLabel>
+                </ConsentRow>
+                {TURNSTILE_SITE_KEY && <TurnstileWrapper ref={turnstileRef} />}
                 <FormSubmit type="submit" disabled={formStatus === 'sending'}>
                   {formStatus === 'sending' ? 'Wysyłanie...' : 'Wyślij Wiadomość'}
                 </FormSubmit>
@@ -465,7 +552,7 @@ export default function App() {
                 )}
                 {formStatus === 'error' && (
                   <FormStatus role="alert" $variant="error">
-                    Nie udało się wysłać wiadomości. Spróbuj ponownie lub napisz na biuro@motowycena.pl.
+                    {FORM_ERRORS[formErrorCode] ?? FORM_ERRORS.send_failed}
                   </FormStatus>
                 )}
               </ContactForm>
@@ -1289,6 +1376,44 @@ const Honeypot = styled.input`
   overflow: hidden;
   opacity: 0;
   pointer-events: none;
+`;
+
+const ConsentRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+`;
+
+const ConsentCheckbox = styled.input`
+  margin-top: 0.25rem;
+  width: 1rem;
+  height: 1rem;
+  accent-color: #0066ff;
+  cursor: pointer;
+  flex-shrink: 0;
+`;
+
+const ConsentLabel = styled.label`
+  font-size: 0.78rem;
+  color: #94a3b8;
+  line-height: 1.5;
+  cursor: pointer;
+
+  a {
+    color: #0066ff;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+`;
+
+const TurnstileWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 0.25rem;
 `;
 
 const FormStatus = styled.p<{ $variant: 'success' | 'error' }>`
