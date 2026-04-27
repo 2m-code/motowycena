@@ -94,24 +94,50 @@ export default function App() {
   const [formName, setFormName] = useState('');
   const [formPhone, setFormPhone] = useState('');
   const [formMessage, setFormMessage] = useState('');
+  const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
 
-  const handleContactSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleContactSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (formStatus === 'sending') return;
+    const botcheck =
+      (e.currentTarget.elements.namedItem('botcheck') as HTMLInputElement | null)?.value || '';
+    if (botcheck) {
+      setFormStatus('success');
+      setFormName('');
+      setFormPhone('');
+      setFormMessage('');
+      return;
+    }
+    setFormStatus('sending');
     const subject = `Zapytanie o wynajem - ${formName || 'formularz'}`;
-    const body = [
-      `Imię i nazwisko: ${formName}`,
-      `Telefon: ${formPhone}`,
-      '',
-      'Wiadomość:',
-      formMessage,
-    ].join('\n');
-    const mailto = `mailto:biuro@eprzyczepy.eu?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailto;
-    setFormName('');
-    setFormPhone('');
-    setFormMessage('');
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          access_key: '1ff2a645-8eb8-42c4-962a-d9dfa9a4b15a',
+          subject,
+          from_name: 'Formularz przyczepy.pl',
+          name: formName,
+          phone: formPhone,
+          message: formMessage,
+          botcheck: '',
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data || data.success !== true) {
+        throw new Error('Web3Forms failed');
+      }
+      setFormStatus('success');
+      setFormName('');
+      setFormPhone('');
+      setFormMessage('');
+    } catch {
+      setFormStatus('error');
+    }
   };
 
   useEffect(() => {
@@ -384,6 +410,13 @@ export default function App() {
 
             <ContactRight>
               <ContactForm onSubmit={handleContactSubmit}>
+                <Honeypot
+                  type="text"
+                  name="botcheck"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                />
                 <FormRow>
                   <FormLabel htmlFor="contact-name">Imię i nazwisko</FormLabel>
                   <FormInput
@@ -422,7 +455,19 @@ export default function App() {
                     required
                   />
                 </FormRow>
-                <FormSubmit type="submit">Wyślij Wiadomość</FormSubmit>
+                <FormSubmit type="submit" disabled={formStatus === 'sending'}>
+                  {formStatus === 'sending' ? 'Wysyłanie...' : 'Wyślij Wiadomość'}
+                </FormSubmit>
+                {formStatus === 'success' && (
+                  <FormStatus role="status" $variant="success">
+                    Dziękujemy! Wiadomość została wysłana. Odezwiemy się wkrótce.
+                  </FormStatus>
+                )}
+                {formStatus === 'error' && (
+                  <FormStatus role="alert" $variant="error">
+                    Nie udało się wysłać wiadomości. Spróbuj ponownie lub napisz na biuro@motowycena.pl.
+                  </FormStatus>
+                )}
               </ContactForm>
             </ContactRight>
           </ContactWrapper>
@@ -1224,10 +1269,37 @@ const FormSubmit = styled.button`
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   margin-top: 1rem;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: #0044bb;
     transform: translateY(-2px);
   }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+`;
+
+const Honeypot = styled.input`
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+`;
+
+const FormStatus = styled.p<{ $variant: 'success' | 'error' }>`
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: ${(p) => (p.$variant === 'success' ? '#ecfdf5' : '#fef2f2')};
+  color: ${(p) => (p.$variant === 'success' ? '#065f46' : '#991b1b')};
+  border: 1px solid ${(p) => (p.$variant === 'success' ? '#a7f3d0' : '#fecaca')};
 `;
 
 /* ---------- Footer ---------- */
