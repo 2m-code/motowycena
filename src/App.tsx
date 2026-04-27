@@ -80,7 +80,7 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
           </TrailerHeader>
           <TrailerDescription>{trailer.description}</TrailerDescription>
           <TrailerFooter>
-            <TrailerCta href="tel:+48509146666">Zadzwoń</TrailerCta>
+            <TrailerCta href="tel:+48692376595">Zadzwoń</TrailerCta>
           </TrailerFooter>
         </TrailerDetails>
       </TrailerGrid>
@@ -208,7 +208,7 @@ export default function App() {
               <LogoIcon>
                 <Tent size={20} />
               </LogoIcon>
-              <LogoText>Motowycena Rafał Pelczar</LogoText>
+              <LogoText>EPRZYCZEPY.EU</LogoText>
             </Logo>
 
             <DesktopNav>
@@ -282,9 +282,8 @@ export default function App() {
               <HeroTitleV2Accent>wolność.</HeroTitleV2Accent>
             </HeroTitleV2>
             <HeroSubtitleV2>
-              Wynajmujemy komfortowe przyczepy kempingowe (Tabbert Bellini i Lunar Clubman) oraz
-              solidne przyczepy transportowe - lawetę i przyczepę motocyklową. Wypożycz i jedź w
-              nieznane!
+              Wynajmujemy komfortowe przyczepy kempingowe znanych marek takich jak Tabbert, Lunar,
+              Dethleffs.
             </HeroSubtitleV2>
             <HeroButtons>
               <HeroPrimaryBtnDark href="#kempingowe">Zobacz Przyczepy</HeroPrimaryBtnDark>
@@ -377,23 +376,23 @@ export default function App() {
               </ContactLead>
 
               <ContactList>
-                <ContactLink href="tel:+48509146666">
+                <ContactLink href="tel:+48692376595">
                   <ContactIconCircle>
                     <Phone size={20} />
                   </ContactIconCircle>
                   <div>
                     <ContactLabel>Bezpośredni telefon</ContactLabel>
-                    <ContactValue>+48 509 146 666</ContactValue>
+                    <ContactValue>+48 692 376 595</ContactValue>
                   </div>
                 </ContactLink>
 
-                <ContactLink href="mailto:biuro@motowycena.pl">
+                <ContactLink href="mailto:biuro@eprzyczepy.eu">
                   <ContactIconCircle>
                     <Mail size={20} />
                   </ContactIconCircle>
                   <div>
                     <ContactLabel>Wyślij zapytanie</ContactLabel>
-                    <ContactValue>biuro@motowycena.pl</ContactValue>
+                    <ContactValue>biuro@eprzyczepy.eu</ContactValue>
                   </div>
                 </ContactLink>
 
@@ -403,7 +402,7 @@ export default function App() {
                   </ContactIconCircleStatic>
                   <div>
                     <ContactLabel>Punkt odbioru</ContactLabel>
-                    <ContactValueSm>Ul. Spacerowa 10, 63-430 Garki</ContactValueSm>
+                    <ContactValueSm>Ul. Spacerowa, 63-430 Garki</ContactValueSm>
                   </div>
                 </ContactStatic>
               </ContactList>
@@ -484,14 +483,14 @@ export default function App() {
           <FooterTop>
             <FooterLogo>
               <Tent size={24} color="#0066FF" />
-              <FooterLogoText>Motowycena Rafał Pelczar</FooterLogoText>
+              <FooterLogoText>EPRZYCZEPY.EU</FooterLogoText>
             </FooterLogo>
             <FooterLinks>
               <FooterLink href={PRIVACY_HASH}>Polityka Prywatności</FooterLink>
             </FooterLinks>
           </FooterTop>
           <FooterBottom>
-            <FooterCopy>© 2026 Motowycena Rafał Pelczar.</FooterCopy>
+            <FooterCopy>© 2026 EPRZYCZEPY.EU</FooterCopy>
             <FooterCredit>
               Projekt &amp; Wykonanie:{' '}
               <FooterCreditBrand

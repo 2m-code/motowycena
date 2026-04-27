@@ -138,7 +138,7 @@ export const TRANSPORTS: Trailer[] = [
   {
     id: 1,
     name: "Laweta samochodowa – dwuosiowa",
-    priceShort: "Wycena indywidualna",
+    priceShort: "80 zł / doba",
     description: `Do wynajęcia solidna, dwuosiowa laweta samochodowa, specjalnie przygotowana pod transport niskich samochodów (sportowych, tuningowanych, z dokładkami, splitterami itp.).
 
 DMC 2000KG
