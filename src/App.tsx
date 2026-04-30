@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Tent, Truck, MapPin, Phone, Mail, CheckCircle2, Menu, X } from 'lucide-react';
+import { Truck, MapPin, Phone, Mail, CheckCircle2, Menu, X } from 'lucide-react';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import styled, { css } from 'styled-components';
 import { CAMPERS, TRANSPORTS, imgUrl, type Trailer } from './data/trailers';
@@ -252,20 +252,6 @@ export default function App() {
 
   return (
     <PageWrapper>
-      {/* BACKGROUND WATERMARK */}
-      <WatermarkFixed>
-        {Array.from({ length: 12 }).map((_, i) => (
-          <WatermarkText key={i}>2mcode.pl</WatermarkText>
-        ))}
-      </WatermarkFixed>
-
-      {/* FLOATING CORNER WATERMARK */}
-      <CornerWatermark>
-        <CornerBadge>
-          Design by <CornerBrand>2mcode.pl</CornerBrand>
-        </CornerBadge>
-      </CornerWatermark>
-
       {/* HEADER */}
       <HeaderBar>
         <Container>
@@ -277,10 +263,7 @@ export default function App() {
               onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && goToMain()}
               aria-label="Przejdź na stronę główną"
             >
-              <LogoIcon>
-                <Tent size={20} />
-              </LogoIcon>
-              <LogoText>EPRZYCZEPY.EU</LogoText>
+              <LogoImage src="/logo.jpeg" alt="Motowycena" />
             </Logo>
 
             <DesktopNav>
@@ -569,7 +552,6 @@ export default function App() {
         <FooterInner>
           <FooterTop>
             <FooterLogo>
-              <Tent size={24} color="#0066FF" />
               <FooterLogoText>EPRZYCZEPY.EU</FooterLogoText>
             </FooterLogo>
             <FooterLinks>
@@ -637,71 +619,13 @@ const MainContent = styled.main`
   display: contents;
 `;
 
-/* --------- Watermark ---------- */
-const WatermarkFixed = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-  user-select: none;
-  overflow: hidden;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(4, 1fr);
-  gap: 0;
-`;
-
-const WatermarkText = styled.span`
-  font-size: 7vw;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  color: #1e293b;
-  opacity: 0.12;
-  transform: rotate(-35deg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
-`;
-
-const CornerWatermark = styled.div`
-  position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  z-index: 9999;
-  pointer-events: none;
-  user-select: none;
-`;
-
-const CornerBadge = styled.span`
-  background: #0f172a;
-  padding: 0.75rem 1.25rem;
-  border-radius: 12px;
-  border: 2px solid #0066ff;
-  box-shadow: 0 8px 32px -4px rgba(0, 102, 255, 0.5);
-  font-size: 13px;
-  font-weight: 900;
-  color: #ffffff;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`;
-
-const CornerBrand = styled.span`
-  color: #0066ff;
-`;
-
 /* --------- Header ---------- */
 const HeaderBar = styled.header`
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: #ffffff;
   z-index: 50;
   border-bottom: 1px solid #e2e8f0;
 `;
@@ -711,7 +635,11 @@ const HeaderRow = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  height: 5rem;
+  height: 6.5rem;
+
+  ${media.md} {
+    height: 7.5rem;
+  }
 `;
 
 const Logo = styled.div`
@@ -723,44 +651,19 @@ const Logo = styled.div`
   flex: 0 1 auto;
 `;
 
-const LogoIcon = styled.div`
-  width: 2.25rem;
-  height: 2.25rem;
-  background: #1e293b;
-  color: #ffffff;
-  border-radius: 9999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+const LogoImage = styled.img`
+  height: 5rem;
+  width: auto;
+  display: block;
   flex-shrink: 0;
+  object-fit: contain;
 
   ${media.md} {
-    width: 2.5rem;
-    height: 2.5rem;
-  }
-`;
-
-const LogoText = styled.span`
-  font-weight: 800;
-  font-size: 1rem;
-  letter-spacing: -0.025em;
-  color: #0066ff;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 1.2;
-
-  ${media.sm} {
-    font-size: 1.125rem;
-  }
-
-  ${media.md} {
-    font-size: 1.25rem;
+    height: 6rem;
   }
 
   ${media.lg} {
-    font-size: 1.5rem;
+    height: 6.5rem;
   }
 `;
 
