@@ -1,6 +1,28 @@
 # BUGS — eprzyczepy.eu
 > Audyt 4 rund × 20 sprintów = 80 sprintów · 1 maja 2026
 > Branch naprawczy: `fix/bugs-audit`
+> Testy formularza Playwright: **59 PASS · 2 FAIL · 9 INFO** · `form-test-results.md`
+
+### Wyniki testów formularza (Playwright)
+
+| Status | Co |
+|--------|-----|
+| ✅ PASS | Struktura: wszystkie pola, labele, required, autocomplete, honeypot |
+| ✅ PASS | HTML5 blokuje pusty submit (name/phone/msg) |
+| ✅ PASS | Bez zgody RODO — request NIE wysłany |
+| ✅ PASS | XSS w polu imię — wartość jako tekst, nie renderuje HTML |
+| ✅ PASS | Sukces: komunikat ✓, pola wyczyszczone ✓, checkbox odznaczony ✓, przycisk wraca ✓ |
+| ✅ PASS | Wszystkie 7 komunikatów błędów serwera (rate_limited, captcha, invalid, send_failed…) |
+| ✅ PASS | Loading state: "Wysyłanie…" + disabled podczas POST |
+| ✅ PASS | Double submit: 5 kliknięć = 1 request do API |
+| ✅ PASS | Mobile 375px: brak overflow, sukces widoczny |
+| ✅ PASS | Tab order: name → phone → message → consent → submit |
+| ✅ PASS | Network error: komunikat błędu + przycisk wraca do aktywnego |
+| ❌ **FAIL** | **Same spacje w imieniu `"   "` — request wysłany z `name="   "`** — brak trim() walidacji client-side → B09 |
+| ❌ **FAIL** | **Input formularza za wąski na mobile: 211px** — nowy bug → B25 |
+| ℹ️ INFO | Telefon bez formatu (`test@mail.com`, `abcdefgh`) — request wysłany, serwer musi walidować → B08 |
+| ℹ️ INFO | Textarea bez `maxlength` → B26 |
+| ℹ️ INFO | autocomplete brak na textarea (drobne) → B11 |
 
 ---
 
@@ -135,6 +157,16 @@ I `id="main-content"` na `MainContent`.
 **Plik:** `src/App.tsx` — `DesktopNav`, `MobileMenu`
 **Fix:** `<DesktopNav aria-label="Nawigacja główna">` i `<MobileMenu aria-label="Menu mobilne">`
 
+### B25 — Input formularza za wąski na mobile (211px) 🆕
+**Plik:** `src/App.tsx` — `ContactWrapper`, `ContactForm`
+**Objaw:** Na 375px input ma 211px szerokości (56% viewportu) — za dużo zagnieżdżonego paddingu: container 1rem + ContactWrapper 2rem + ContactForm 2rem = łącznie 80px per side.
+**Fix:** Zmniejszyć padding `ContactForm` na mobile: `${media.sm}` → `padding: 1.25rem` zamiast `2rem`
+
+### B26 — Brak `maxlength` na textarea (brak limitu po stronie klienta) 🆕
+**Plik:** `src/App.tsx` — `FormTextarea`
+**Objaw:** Użytkownik może wpisać dowolnie długi tekst; serwer odrzuca >5000 znaków, ale bez feedbacku przed wysłaniem.
+**Fix:** `<FormTextarea maxLength={5000} ...>` + licznik znaków opcjonalnie
+
 ### B17 — Wszystkie `<img>` bez atrybutów width/height (CLS)
 **Plik:** `src/App.tsx` — `TrailerMainImg`, `ThumbImg`, `LogoImage`, `HeroBgImg`
 **Objaw:** Przeglądarka nie zna rozmiarów przed załadowaniem → strona "skacze" (Cumulative Layout Shift).
@@ -202,3 +234,5 @@ I `id="main-content"` na `MainContent`.
 - [ ] B22 favicon.ico
 - [ ] B23 media print
 - [ ] B24 consent link height
+- [ ] B25 input za wąski mobile
+- [ ] B26 textarea bez maxlength
