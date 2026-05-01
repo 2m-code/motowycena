@@ -263,7 +263,7 @@ export default function App() {
               onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && goToMain()}
               aria-label="Przejdź na stronę główną"
             >
-              <LogoImage src="/logo.jpeg" alt="Motowycena" />
+              <LogoImage src="/logo.jpeg" alt="EPRZYCZEPY.EU" />
             </Logo>
 
             <DesktopNav>

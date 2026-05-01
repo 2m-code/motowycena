@@ -3,6 +3,11 @@ import express from 'express';
 import cors from 'cors';
 import nodemailer from 'nodemailer';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const distPath = path.join(__dirname, 'dist');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -100,7 +105,7 @@ app.post('/api/contact', contactLimiter, async (req, res) => {
     await transporter.sendMail({
       from: MAIL_FROM,
       to: MAIL_TO,
-      subject: `Zapytanie z przyczepy.pl — ${safeName}`,
+      subject: `Zapytanie z eprzyczepy.eu — ${safeName}`,
       text: `Imię: ${safeName}\nTelefon: ${safePhone}\n\n${message}`,
       html: `<p><strong>Imię:</strong> ${escapeHtml(safeName)}</p>
 <p><strong>Telefon:</strong> ${escapeHtml(safePhone)}</p>

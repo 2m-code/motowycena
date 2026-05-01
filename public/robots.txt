@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.motowycena.pl/sitemap.xml
+Sitemap: https://www.eprzyczepy.eu/sitemap.xml
