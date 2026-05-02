@@ -25,7 +25,7 @@ export default function PrivacyPolicy({ onBack }: PrivacyPolicyProps) {
             <ArrowLeft size={18} />
             Wróć na stronę główną
           </BackBtn>
-          <UpdatedBadge>Ostatnia aktualizacja: 22 kwietnia 2026</UpdatedBadge>
+          <UpdatedBadge>Ostatnia aktualizacja: 1 maja 2026</UpdatedBadge>
         </TopRow>
 
         <Hero
@@ -49,9 +49,9 @@ export default function PrivacyPolicy({ onBack }: PrivacyPolicyProps) {
             <H2>§1</H2>
             <H2>POSTANOWIENIA OGÓLNE</H2>
             <P>
-              Niniejsza Polityka Prywatności i Polityka Cookies określa zasady przetwarzania i ochrony danych osobowych przekazanych przez Użytkowników oraz plików Cookies, a także innych technologii pojawiających się na stronie internetowej https://www.motowycena.pl/
-W razie jakichkolwiek wątpliwości w zakresie postanowień niniejszej Polityki Prywatności i Polityki Cookies proszę kontaktować się z Administratorem poprzez adres e-mail biuro@motowycena.pl
-Wszelkie dane osobowe i adresowe podane przez Użytkownika na stronie https://www.motowycena.pl/ nie będą w jakikolwiek sposób udostępniane ani odsprzedawane osobom trzecim.
+              Niniejsza Polityka Prywatności i Polityka Cookies określa zasady przetwarzania i ochrony danych osobowych przekazanych przez Użytkowników oraz plików Cookies, a także innych technologii pojawiających się na stronie internetowej https://www.eprzyczepy.eu/
+W razie jakichkolwiek wątpliwości w zakresie postanowień niniejszej Polityki Prywatności i Polityki Cookies proszę kontaktować się z Administratorem poprzez adres e-mail biuro@eprzyczepy.eu
+Wszelkie dane osobowe i adresowe podane przez Użytkownika na stronie https://www.eprzyczepy.eu/ nie będą w jakikolwiek sposób udostępniane ani odsprzedawane osobom trzecim.
 Administrator zastrzega sobie prawo do wprowadzania zmian w polityce prywatności, a każdego Użytkownika strony obowiązuje znajomość aktualnej polityki prywatności.
 Przyczyną zmian mogą być rozwój technologii internetowej, zmiany w powszechnie obowiązującym prawie czy tez rozwój Strony.
             </P>
@@ -67,7 +67,7 @@ Przyczyną zmian mogą być rozwój technologii internetowej, zmiany w powszechn
               „Użytkownik" - każdy podmiot przebywający na stronie i korzystający z niej.
             </P>
             <P>
-              „Strona" - strona internetowa i blog znajdujące się pod adresem https://www.motowycena.pl/
+              „Strona" - strona internetowa i blog znajdujące się pod adresem https://www.eprzyczepy.eu/
             </P>
           </Section>
 
@@ -109,19 +109,13 @@ Przyczyną zmian mogą być rozwój technologii internetowej, zmiany w powszechn
           <Section>
             <H2>§5</H2>
             <H2>TECHNOLOGIE</H2>
-            <P>1. Administrator stosuje następujące technologie obserwujące działania podejmowane przez Użytkownika w ramach Strony:</P>
-            <Ul>
-              <li>
-                1.1. Wbudowany kod Google Analytics - w celu analizy statystyk Strony. Google Analytics korzysta z własnych plików cookies do analizowania działań i zachowań Użytkowników Strony. Pliki te służą do przechowywania informacji, np. z jakiej strony Użytkownik trafił na bieżącą stronę internetową. Pomagają udoskonalić Stronę.
-              </li>
-            </Ul>
             <P>
-              2. W celu korzystania ze strony internetowej https://www.motowycena.pl/ niezbędne jest posiadanie:
+              W celu korzystania ze strony internetowej https://www.eprzyczepy.eu/ niezbędne jest posiadanie:
             </P>
             <Ul>
-              <li>2.1. Urządzenia z dostępem do sieci Internet</li>
-              <li>2.2. Aktywnej skrzynki elektronicznej odbierającej wiadomości e-mail</li>
-              <li>2.3. Przeglądarki internetowej umożliwiającej wyświetlanie stron www.</li>
+              <li>Urządzenia z dostępem do sieci Internet</li>
+              <li>Aktywnej skrzynki elektronicznej odbierającej wiadomości e-mail</li>
+              <li>Przeglądarki internetowej umożliwiającej wyświetlanie stron www.</li>
             </Ul>
           </Section>
 
@@ -152,7 +146,7 @@ Przyczyną zmian mogą być rozwój technologii internetowej, zmiany w powszechn
             <P>Korzystając z menu „Safari” wybierz „Preferencje” a w nim zakładkę „Prywatność”. Zakładka ta zawiera rozbudowane opcje dotyczące plików cookie.</P>
             <P><Strong>Telefony komórkowe, tablety oraz inne urządzenia mobilne</Strong></P>
             <P>Każdy rodzaj urządzenia mobilnego, może obsługiwać taką funkcjonalność w inny sposób zależnie od rodzaju urządzenia i wykorzystywanej platformy. Dlatego należy zapoznać się z ustawieniami prywatności w pliku pomocy, dokumentacji lub instrukcji obsługi danego urządzenia lub systemu operacyjnego.</P>
-            <P>Informacje o usługach przedstawione na stronie https://www.motowycena.pl/ obowiązują od 01.01.2022r</P>
+            <P>Informacje o usługach przedstawione na stronie https://www.eprzyczepy.eu/ obowiązują od 01.05.2026 r.</P>
           </Section>
 
         </Content>
