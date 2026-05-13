@@ -9,8 +9,9 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "server": "tsx server.ts",
-    "server:dev": "tsx watch server.ts"
+    "start": "node app.js",
+    "server": "node app.js",
+    "server:dev": "node --watch app.js"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.0.4",
