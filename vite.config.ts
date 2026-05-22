@@ -23,6 +23,10 @@ export default defineConfig(({ mode }) => {
           target: `http://localhost:${env.MAIL_SERVER_PORT ?? '3001'}`,
           changeOrigin: true,
         },
+        '/uploads': {
+          target: `http://localhost:${env.MAIL_SERVER_PORT ?? '3001'}`,
+          changeOrigin: true,
+        },
       },
     },
   };

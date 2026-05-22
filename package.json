@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
+    "start": "tsx server.ts",
     "server": "tsx server.ts",
     "server:dev": "tsx watch server.ts"
   },

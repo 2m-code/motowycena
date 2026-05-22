@@ -2,13 +2,15 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Truck, MapPin, Phone, Mail, CheckCircle2, Menu, X } from 'lucide-react';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import styled, { css } from 'styled-components';
-import { CAMPERS, TRANSPORTS, imgUrl, type Trailer } from './data/trailers';
+import { DEFAULT_SITE_CONTENT, imgUrl, type SiteContent, type Trailer } from './data/siteContent';
 import { media } from './styles/theme';
 import CookieConsent from './components/CookieConsent';
 import PrivacyPolicy from './components/PrivacyPolicy';
+import AdminPanel from './components/AdminPanel';
 
 const PRIVACY_HASH = '#polityka-prywatnosci';
-type View = 'main' | 'privacy';
+const TERMS_HASH = '#regulamin';
+type View = 'main' | 'privacy' | 'terms';
 
 const TURNSTILE_SITE_KEY = process.env.TURNSTILE_SITE_KEY ?? '';
 
@@ -40,9 +42,10 @@ const FORM_ERRORS: Record<string, string> = {
 };
 
 function getViewFromHash(): View {
-  return typeof window !== 'undefined' && window.location.hash === PRIVACY_HASH
-    ? 'privacy'
-    : 'main';
+  if (typeof window === 'undefined') return 'main';
+  if (window.location.hash === PRIVACY_HASH) return 'privacy';
+  if (window.location.hash === TERMS_HASH) return 'terms';
+  return 'main';
 }
 
 type TrailerRowProps = {
@@ -56,6 +59,10 @@ type TrailerRowProps = {
 function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
   const [activeImage, setActiveImage] = useState(trailer.images[0]);
 
+  useEffect(() => {
+    setActiveImage(trailer.images[0]);
+  }, [trailer.images]);
+
   return (
     <TrailerCard
       initial={{ opacity: 0, y: 20 }}
@@ -68,7 +75,7 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
         <TrailerGallery>
           <TrailerImageWrap>
             <TrailerMainImg
-              src={imgUrl(activeImage)}
+              src={imgUrl(activeImage || trailer.images[0] || 'trailers/T1.jpg')}
               alt={trailer.name}
               loading="lazy"
               decoding="async"
@@ -118,6 +125,7 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
 }
 
 export default function App() {
+  const [content, setContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [view, setView] = useState<View>(() => getViewFromHash());
   const [formName, setFormName] = useState('');
@@ -129,6 +137,24 @@ export default function App() {
   const turnstileRef = useRef<HTMLDivElement | null>(null);
   const turnstileWidgetId = useRef<string | null>(null);
   const turnstileToken = useRef<string>('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.pathname.replace(/\/$/, '') === '/admin') return;
+
+    let cancelled = false;
+    fetch('/api/content')
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('content_fetch_failed'))))
+      .then((data: SiteContent) => {
+        if (!cancelled) setContent(data);
+      })
+      .catch(() => {
+        if (!cancelled) setContent(DEFAULT_SITE_CONTENT);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!TURNSTILE_SITE_KEY) return;
@@ -250,6 +276,10 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  if (typeof window !== 'undefined' && window.location.pathname.replace(/\/$/, '') === '/admin') {
+    return <AdminPanel />;
+  }
+
   return (
     <PageWrapper>
       {/* HEADER */}
@@ -309,15 +339,17 @@ export default function App() {
 
       <MainContent>
       {view === 'privacy' ? (
-        <PrivacyPolicy onBack={goToMain} />
+        <PrivacyPolicy document={content.legal.privacy} onBack={goToMain} />
+      ) : view === 'terms' ? (
+        <PrivacyPolicy document={content.legal.terms} onBack={goToMain} />
       ) : (
       <>
       {/* HERO SECTION */}
       <HeroSection2>
         <HeroBg>
           <HeroBgImg
-            src={imgUrl('trailers/T1.jpg')}
-            alt="Tabbert Bellini - przyczepa kempingowa"
+            src={imgUrl(content.hero.image || DEFAULT_SITE_CONTENT.hero.image)}
+            alt={content.hero.titleAccent}
             fetchPriority="high"
             decoding="async"
           />
@@ -331,18 +363,17 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <HeroKickerV2>Twój Partner w Podróży</HeroKickerV2>
+            <HeroKickerV2>{content.hero.kicker}</HeroKickerV2>
             <HeroTitleV2>
-              Kierunek - <br />
-              <HeroTitleV2Accent>wolność.</HeroTitleV2Accent>
+              {content.hero.titlePrefix} <br />
+              <HeroTitleV2Accent>{content.hero.titleAccent}</HeroTitleV2Accent>
             </HeroTitleV2>
             <HeroSubtitleV2>
-              Wynajmujemy komfortowe przyczepy kempingowe znanych marek takich jak Tabbert, Lunar,
-              Dethleffs.
+              {content.hero.subtitle}
             </HeroSubtitleV2>
             <HeroButtons>
-              <HeroPrimaryBtnDark href="#kempingowe">Zobacz Przyczepy</HeroPrimaryBtnDark>
-              <HeroSecondaryBtnV2 href="#kontakt">Skontaktuj Się</HeroSecondaryBtnV2>
+              <HeroPrimaryBtnDark href="#kempingowe">{content.hero.primaryCta}</HeroPrimaryBtnDark>
+              <HeroSecondaryBtnV2 href="#kontakt">{content.hero.secondaryCta}</HeroSecondaryBtnV2>
             </HeroButtons>
           </HeroTextBlock>
         </HeroInner2>
@@ -352,10 +383,10 @@ export default function App() {
       <QuickHighlight>
         <QuickHighlightInner>
           <QuickHighlightItem>
-            <CheckCircle2 size={20} color="#0066FF" /> Przyczepy kempingowe klasy premium
+            <CheckCircle2 size={20} color="#0066FF" /> {content.highlights[0]}
           </QuickHighlightItem>
           <QuickHighlightItem>
-            <CheckCircle2 size={20} color="#0066FF" /> Laweta dwuosiowa i przyczepa motocyklowa
+            <CheckCircle2 size={20} color="#0066FF" /> {content.highlights[1]}
           </QuickHighlightItem>
         </QuickHighlightInner>
       </QuickHighlight>
@@ -364,22 +395,21 @@ export default function App() {
       <CampingSection id="kempingowe">
         <SectionHeader>
           <SectionHeaderText>
-            <SectionKicker>Oferta Kempingowa</SectionKicker>
-            <SectionTitle>Twój hotel z niezłym widokiem.</SectionTitle>
+            <SectionKicker>{content.camping.kicker}</SectionKicker>
+            <SectionTitle>{content.camping.title}</SectionTitle>
             <SectionLead>
-              Zadbana, w pełni wyposażona flota na każdy rodzaj wakacji. Tabbert Bellini klasy
-              premium i bogato wyposażony Lunar Clubman - pełna niezależność na kempingu.
+              {content.camping.lead}
             </SectionLead>
           </SectionHeaderText>
         </SectionHeader>
 
         <TrailerList>
-          {CAMPERS.map((camper, i) => (
+          {content.camping.trailers.map((camper, i) => (
             <TrailerRow
               key={camper.id}
               trailer={camper}
-              badge="Kemping"
-              badgeColor="#0066FF"
+              badge={content.camping.badge}
+              badgeColor={content.camping.badgeColor}
               reverse={i % 2 === 1}
             />
           ))}
@@ -390,24 +420,23 @@ export default function App() {
       <TransportSection id="transportowe">
         <Container>
           <TransportHeader>
-            <SectionKicker>Oferta Transportowa</SectionKicker>
+            <SectionKicker>{content.transport.kicker}</SectionKicker>
             <TransportIconBox>
               <Truck size={32} />
             </TransportIconBox>
-            <SectionTitle>Mamy dwie mocne sztuki.</SectionTitle>
+            <SectionTitle>{content.transport.title}</SectionTitle>
             <SectionLead>
-              Oprócz rekreacji, zajmujemy się tym co praktyczne. Potrzebujesz przewieźć obniżone
-              auto lub trzy motocykle? Polecamy nasze przyczepy transportowe.
+              {content.transport.lead}
             </SectionLead>
           </TransportHeader>
 
           <TrailerList>
-            {TRANSPORTS.map((trans, i) => (
+            {content.transport.trailers.map((trans, i) => (
               <TrailerRow
                 key={trans.id}
                 trailer={trans}
-                badge="Transport"
-                badgeColor="#1E293B"
+                badge={content.transport.badge}
+                badgeColor={content.transport.badgeColor}
                 reverse={i % 2 === 1}
               />
             ))}
@@ -420,34 +449,37 @@ export default function App() {
         <Container>
           <ContactWrapper>
             <ContactLeft>
-              <SectionKicker>Kontakt</SectionKicker>
+              <SectionKicker>{content.contact.kicker}</SectionKicker>
               <ContactTitle>
-                Czas rezerwować <br />
-                Twój termin
+                {content.contact.title.split('\n').map((line, idx) => (
+                  <span key={idx}>
+                    {line}
+                    {idx < content.contact.title.split('\n').length - 1 && <br />}
+                  </span>
+                ))}
               </ContactTitle>
               <ContactLead>
-                Sprawdź dostępność przyczepy. Napisz lub zadzwoń, a przygotujemy dla Ciebie całą
-                umowę pod wypożyczenie.
+                {content.contact.lead}
               </ContactLead>
 
               <ContactList>
-                <ContactLink href="tel:+48692376595">
+                <ContactLink href={`tel:${content.contact.phone.replace(/\s/g, '')}`}>
                   <ContactIconCircle>
                     <Phone size={20} />
                   </ContactIconCircle>
                   <div>
                     <ContactLabel>Bezpośredni telefon</ContactLabel>
-                    <ContactValue>+48 692 376 595</ContactValue>
+                    <ContactValue>{content.contact.phone}</ContactValue>
                   </div>
                 </ContactLink>
 
-                <ContactLink href="mailto:biuro@eprzyczepy.eu">
+                <ContactLink href={`mailto:${content.contact.email}`}>
                   <ContactIconCircle>
                     <Mail size={20} />
                   </ContactIconCircle>
                   <div>
                     <ContactLabel>Wyślij zapytanie</ContactLabel>
-                    <ContactValue>biuro@eprzyczepy.eu</ContactValue>
+                    <ContactValue>{content.contact.email}</ContactValue>
                   </div>
                 </ContactLink>
 
@@ -457,7 +489,7 @@ export default function App() {
                   </ContactIconCircleStatic>
                   <div>
                     <ContactLabel>Punkt odbioru</ContactLabel>
-                    <ContactValueSm>Ul. Spacerowa, 63-430 Garki</ContactValueSm>
+                    <ContactValueSm>{content.contact.address}</ContactValueSm>
                   </div>
                 </ContactStatic>
               </ContactList>
@@ -556,6 +588,7 @@ export default function App() {
             </FooterLogo>
             <FooterLinks>
               <FooterLink href={PRIVACY_HASH}>Polityka Prywatności</FooterLink>
+              <FooterLink href={TERMS_HASH}>Regulamin</FooterLink>
             </FooterLinks>
           </FooterTop>
           <FooterBottom>

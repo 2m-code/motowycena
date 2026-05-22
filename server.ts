@@ -4,15 +4,23 @@ import cors from 'cors';
 import nodemailer from 'nodemailer';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
+import fs from 'fs/promises';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
+import { DEFAULT_SITE_CONTENT, type SiteContent, type Trailer } from './src/data/siteContent.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distPath = path.join(__dirname, 'dist');
+const dataDir = path.join(__dirname, 'data');
+const uploadsDir = path.join(__dirname, 'uploads');
+const contentPath = path.join(dataDir, 'site-content.json');
+const adminCookieName = 'eprzyczepy_admin';
 
 const app = express();
 app.set('trust proxy', 1);
-app.use(express.json({ limit: '64kb' }));
+app.use(express.json({ limit: '12mb' }));
 app.use(cors());
+app.use('/uploads', express.static(uploadsDir, { maxAge: '7d' }));
 
 const {
   SMTP_HOST,
@@ -23,7 +31,12 @@ const {
   MAIL_FROM,
   MAIL_TO,
   PORT,
+  MAIL_SERVER_PORT,
   TURNSTILE_SECRET_KEY,
+  ADMIN_PASSWORD,
+  ADMIN_SESSION_SECRET,
+  SESSION_SECRET,
+  NODE_ENV,
 } = process.env;
 
 if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !MAIL_FROM || !MAIL_TO) {
@@ -31,6 +44,12 @@ if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !MAIL_FROM || !MAIL_
 }
 if (!TURNSTILE_SECRET_KEY) {
   console.warn('[mail] TURNSTILE_SECRET_KEY missing — captcha verification disabled (dev only).');
+}
+if (!ADMIN_PASSWORD) {
+  console.warn('[admin] ADMIN_PASSWORD missing — /admin login is disabled until configured.');
+}
+if (!ADMIN_SESSION_SECRET && !SESSION_SECRET && NODE_ENV === 'production') {
+  console.warn('[admin] ADMIN_SESSION_SECRET or SESSION_SECRET should be set in production.');
 }
 
 const transporter = nodemailer.createTransport({
@@ -46,12 +65,250 @@ const escapeHtml = (s: string) =>
 // Strip CR/LF/NUL — header injection guard for fields that flow into headers/subject.
 const stripCtl = (s: string) => s.replace(/[\r\n\0]/g, ' ').trim();
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const asString = (value: unknown, fallback: string) =>
+  typeof value === 'string' ? value : fallback;
+
+const asStringArray = (value: unknown, fallback: string[]) =>
+  Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : fallback;
+
+const normalizeTrailer = (value: unknown, fallback: Trailer): Trailer => {
+  const row = isRecord(value) ? value : {};
+  return {
+    id: typeof row.id === 'number' ? row.id : fallback.id,
+    name: asString(row.name, fallback.name),
+    priceShort: asString(row.priceShort, fallback.priceShort),
+    description: asString(row.description, fallback.description),
+    images: asStringArray(row.images, fallback.images),
+  };
+};
+
+const normalizeContent = (value: unknown): SiteContent => {
+  const input = isRecord(value) ? value : {};
+  const hero = isRecord(input.hero) ? input.hero : {};
+  const camping = isRecord(input.camping) ? input.camping : {};
+  const transport = isRecord(input.transport) ? input.transport : {};
+  const contact = isRecord(input.contact) ? input.contact : {};
+  const legal = isRecord(input.legal) ? input.legal : {};
+  const privacy = isRecord(legal.privacy) ? legal.privacy : {};
+  const terms = isRecord(legal.terms) ? legal.terms : {};
+
+  return {
+    hero: {
+      kicker: asString(hero.kicker, DEFAULT_SITE_CONTENT.hero.kicker),
+      titlePrefix: asString(hero.titlePrefix, DEFAULT_SITE_CONTENT.hero.titlePrefix),
+      titleAccent: asString(hero.titleAccent, DEFAULT_SITE_CONTENT.hero.titleAccent),
+      subtitle: asString(hero.subtitle, DEFAULT_SITE_CONTENT.hero.subtitle),
+      primaryCta: asString(hero.primaryCta, DEFAULT_SITE_CONTENT.hero.primaryCta),
+      secondaryCta: asString(hero.secondaryCta, DEFAULT_SITE_CONTENT.hero.secondaryCta),
+      image: asString(hero.image, DEFAULT_SITE_CONTENT.hero.image),
+    },
+    highlights: asStringArray(input.highlights, DEFAULT_SITE_CONTENT.highlights).slice(0, 4),
+    camping: {
+      kicker: asString(camping.kicker, DEFAULT_SITE_CONTENT.camping.kicker),
+      title: asString(camping.title, DEFAULT_SITE_CONTENT.camping.title),
+      lead: asString(camping.lead, DEFAULT_SITE_CONTENT.camping.lead),
+      badge: asString(camping.badge, DEFAULT_SITE_CONTENT.camping.badge),
+      badgeColor: asString(camping.badgeColor, DEFAULT_SITE_CONTENT.camping.badgeColor),
+      trailers: (Array.isArray(camping.trailers) ? camping.trailers : DEFAULT_SITE_CONTENT.camping.trailers)
+        .map((trailer, index) =>
+          normalizeTrailer(trailer, DEFAULT_SITE_CONTENT.camping.trailers[index] ?? DEFAULT_SITE_CONTENT.camping.trailers[0])
+        ),
+    },
+    transport: {
+      kicker: asString(transport.kicker, DEFAULT_SITE_CONTENT.transport.kicker),
+      title: asString(transport.title, DEFAULT_SITE_CONTENT.transport.title),
+      lead: asString(transport.lead, DEFAULT_SITE_CONTENT.transport.lead),
+      badge: asString(transport.badge, DEFAULT_SITE_CONTENT.transport.badge),
+      badgeColor: asString(transport.badgeColor, DEFAULT_SITE_CONTENT.transport.badgeColor),
+      trailers: (Array.isArray(transport.trailers) ? transport.trailers : DEFAULT_SITE_CONTENT.transport.trailers)
+        .map((trailer, index) =>
+          normalizeTrailer(trailer, DEFAULT_SITE_CONTENT.transport.trailers[index] ?? DEFAULT_SITE_CONTENT.transport.trailers[0])
+        ),
+    },
+    contact: {
+      kicker: asString(contact.kicker, DEFAULT_SITE_CONTENT.contact.kicker),
+      title: asString(contact.title, DEFAULT_SITE_CONTENT.contact.title),
+      lead: asString(contact.lead, DEFAULT_SITE_CONTENT.contact.lead),
+      phone: asString(contact.phone, DEFAULT_SITE_CONTENT.contact.phone),
+      email: asString(contact.email, DEFAULT_SITE_CONTENT.contact.email),
+      address: asString(contact.address, DEFAULT_SITE_CONTENT.contact.address),
+    },
+    legal: {
+      privacy: {
+        title: asString(privacy.title, DEFAULT_SITE_CONTENT.legal.privacy.title),
+        updatedAt: asString(privacy.updatedAt, DEFAULT_SITE_CONTENT.legal.privacy.updatedAt),
+        body: asString(privacy.body, DEFAULT_SITE_CONTENT.legal.privacy.body),
+      },
+      terms: {
+        title: asString(terms.title, DEFAULT_SITE_CONTENT.legal.terms.title),
+        updatedAt: asString(terms.updatedAt, DEFAULT_SITE_CONTENT.legal.terms.updatedAt),
+        body: asString(terms.body, DEFAULT_SITE_CONTENT.legal.terms.body),
+      },
+    },
+  };
+};
+
+const readContent = async (): Promise<SiteContent> => {
+  try {
+    const raw = await fs.readFile(contentPath, 'utf8');
+    return normalizeContent(JSON.parse(raw));
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+      console.error('[content] read failed', err);
+    }
+    return DEFAULT_SITE_CONTENT;
+  }
+};
+
+const writeContent = async (content: SiteContent) => {
+  await fs.mkdir(dataDir, { recursive: true });
+  const normalized = normalizeContent(content);
+  await fs.writeFile(contentPath, `${JSON.stringify(normalized, null, 2)}\n`, 'utf8');
+  return normalized;
+};
+
+const parseCookies = (header: string | undefined) => {
+  const out: Record<string, string> = {};
+  if (!header) return out;
+  for (const part of header.split(';')) {
+    const [name, ...valueParts] = part.trim().split('=');
+    if (name) out[name] = decodeURIComponent(valueParts.join('='));
+  }
+  return out;
+};
+
+const timingSafeEqual = (a: string, b: string) => {
+  const left = Buffer.from(a);
+  const right = Buffer.from(b);
+  return left.length === right.length && crypto.timingSafeEqual(left, right);
+};
+
+const adminSecret = () => ADMIN_SESSION_SECRET || SESSION_SECRET || ADMIN_PASSWORD || 'dev-admin-secret';
+
+const signSession = (expiresAt: number, nonce: string) =>
+  crypto
+    .createHmac('sha256', adminSecret())
+    .update(`${expiresAt}.${nonce}`)
+    .digest('base64url');
+
+const makeAdminCookie = () => {
+  const expiresAt = Date.now() + 1000 * 60 * 60 * 12;
+  const nonce = crypto.randomBytes(18).toString('base64url');
+  return `v1.${expiresAt}.${nonce}.${signSession(expiresAt, nonce)}`;
+};
+
+const isValidAdminCookie = (cookie: string | undefined) => {
+  if (!cookie) return false;
+  const [version, expiresAtRaw, nonce, signature] = cookie.split('.');
+  const expiresAt = Number(expiresAtRaw);
+  if (version !== 'v1' || !Number.isFinite(expiresAt) || expiresAt < Date.now() || !nonce || !signature) {
+    return false;
+  }
+  return timingSafeEqual(signature, signSession(expiresAt, nonce));
+};
+
+const setAdminSessionCookie = (res: express.Response, value: string, maxAge: number) => {
+  const secure = NODE_ENV === 'production' ? '; Secure' : '';
+  res.setHeader(
+    'Set-Cookie',
+    `${adminCookieName}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`
+  );
+};
+
+const requireAdmin: express.RequestHandler = (req, res, next) => {
+  if (isValidAdminCookie(parseCookies(req.headers.cookie)[adminCookieName])) {
+    next();
+    return;
+  }
+  res.status(401).json({ ok: false, error: 'unauthorized' });
+};
+
 const contactLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 5,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   message: { ok: false, error: 'rate_limited' },
+});
+
+const adminLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { ok: false, error: 'rate_limited' },
+});
+
+app.get('/api/content', async (_req, res) => {
+  res.json(await readContent());
+});
+
+app.get('/api/admin/session', requireAdmin, (_req, res) => {
+  res.json({ ok: true });
+});
+
+app.post('/api/admin/login', adminLoginLimiter, (req, res) => {
+  if (!ADMIN_PASSWORD) {
+    return res.status(503).json({ ok: false, error: 'admin_password_missing' });
+  }
+
+  const password = typeof req.body?.password === 'string' ? req.body.password : '';
+  if (!timingSafeEqual(password, ADMIN_PASSWORD)) {
+    return res.status(401).json({ ok: false, error: 'invalid_password' });
+  }
+
+  setAdminSessionCookie(res, makeAdminCookie(), 60 * 60 * 12);
+  res.json({ ok: true });
+});
+
+app.post('/api/admin/logout', (_req, res) => {
+  setAdminSessionCookie(res, '', 0);
+  res.json({ ok: true });
+});
+
+app.get('/api/admin/content', requireAdmin, async (_req, res) => {
+  res.json(await readContent());
+});
+
+app.put('/api/admin/content', requireAdmin, async (req, res) => {
+  try {
+    const saved = await writeContent(req.body);
+    res.json({ ok: true, content: saved });
+  } catch (err) {
+    console.error('[content] write failed', err);
+    res.status(500).json({ ok: false, error: 'write_failed' });
+  }
+});
+
+app.post('/api/admin/upload', requireAdmin, async (req, res) => {
+  const fileName = typeof req.body?.fileName === 'string' ? req.body.fileName : 'upload';
+  const dataUrl = typeof req.body?.dataUrl === 'string' ? req.body.dataUrl : '';
+  const match = dataUrl.match(/^data:(image\/(?:jpeg|png|webp));base64,([a-z0-9+/=]+)$/i);
+  if (!match) return res.status(400).json({ ok: false, error: 'invalid_image' });
+
+  const mime = match[1];
+  const ext = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg';
+  const bytes = Buffer.from(match[2], 'base64');
+  if (bytes.length > 8 * 1024 * 1024) {
+    return res.status(400).json({ ok: false, error: 'image_too_large' });
+  }
+
+  const safeBase = path
+    .basename(fileName)
+    .replace(/\.[^.]+$/, '')
+    .replace(/[^a-z0-9-_]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase() || 'image';
+  const savedName = `${Date.now()}-${safeBase}.${ext}`;
+
+  await fs.mkdir(uploadsDir, { recursive: true });
+  await fs.writeFile(path.join(uploadsDir, savedName), bytes);
+  res.json({ ok: true, path: `/uploads/${savedName}` });
 });
 
 async function verifyTurnstile(token: string, ip: string | undefined): Promise<boolean> {
@@ -119,5 +376,15 @@ app.post('/api/contact', contactLimiter, async (req, res) => {
   }
 });
 
-const port = Number(PORT ?? 3001);
+app.use(express.static(distPath, { maxAge: '1h' }));
+app.get('*', async (_req, res, next) => {
+  try {
+    await fs.access(path.join(distPath, 'index.html'));
+    res.sendFile(path.join(distPath, 'index.html'));
+  } catch {
+    next();
+  }
+});
+
+const port = Number(PORT ?? MAIL_SERVER_PORT ?? 3001);
 app.listen(port, () => console.log(`[mail] listening :${port}`));
