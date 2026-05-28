@@ -68,21 +68,35 @@ const stripCtl = (s: string) => s.replace(/[\r\n\0]/g, ' ').trim();
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const asString = (value: unknown, fallback: string) =>
-  typeof value === 'string' ? value : fallback;
+// Caps to bound persisted content (prevents authed user filling disk / breaking UI).
+const MAX_TRAILERS_PER_SECTION = 50;
+const MAX_SHORT = 500;        // single-line fields (titles, kickers, CTAs, etc.)
+const MAX_LONG = 20_000;      // multi-line copy (subtitle, lead, description)
+const MAX_LEGAL = 200_000;    // privacy/terms body
+const MAX_IMAGES_PER_TRAILER = 20;
+const MAX_PATH = 500;
 
-const asStringArray = (value: unknown, fallback: string[]) =>
+const clampString = (value: string, max: number) =>
+  value.length > max ? value.slice(0, max) : value;
+
+const asString = (value: unknown, fallback: string, max = MAX_SHORT) =>
+  typeof value === 'string' ? clampString(value, max) : fallback;
+
+const asStringArray = (value: unknown, fallback: string[], maxItems = MAX_IMAGES_PER_TRAILER, maxLen = MAX_PATH) =>
   Array.isArray(value)
-    ? value.filter((item): item is string => typeof item === 'string')
+    ? value
+        .filter((item): item is string => typeof item === 'string')
+        .slice(0, maxItems)
+        .map((item) => clampString(item, maxLen))
     : fallback;
 
 const normalizeTrailer = (value: unknown, fallback: Trailer): Trailer => {
   const row = isRecord(value) ? value : {};
   return {
-    id: typeof row.id === 'number' ? row.id : fallback.id,
-    name: asString(row.name, fallback.name),
-    priceShort: asString(row.priceShort, fallback.priceShort),
-    description: asString(row.description, fallback.description),
+    id: typeof row.id === 'number' && Number.isFinite(row.id) ? row.id : fallback.id,
+    name: asString(row.name, fallback.name, MAX_SHORT),
+    priceShort: asString(row.priceShort, fallback.priceShort, MAX_SHORT),
+    description: asString(row.description, fallback.description, MAX_LONG),
     images: asStringArray(row.images, fallback.images),
   };
 };
@@ -97,43 +111,49 @@ const normalizeContent = (value: unknown): SiteContent => {
   const privacy = isRecord(legal.privacy) ? legal.privacy : {};
   const terms = isRecord(legal.terms) ? legal.terms : {};
 
+  const normalizeOfferTrailers = (
+    raw: unknown,
+    fallback: Trailer[]
+  ): Trailer[] => {
+    const list = Array.isArray(raw) ? raw : fallback;
+    return list
+      .slice(0, MAX_TRAILERS_PER_SECTION)
+      .map((trailer, index) =>
+        normalizeTrailer(trailer, fallback[index] ?? fallback[0])
+      );
+  };
+
   return {
     hero: {
       kicker: asString(hero.kicker, DEFAULT_SITE_CONTENT.hero.kicker),
       titlePrefix: asString(hero.titlePrefix, DEFAULT_SITE_CONTENT.hero.titlePrefix),
       titleAccent: asString(hero.titleAccent, DEFAULT_SITE_CONTENT.hero.titleAccent),
-      subtitle: asString(hero.subtitle, DEFAULT_SITE_CONTENT.hero.subtitle),
+      subtitle: asString(hero.subtitle, DEFAULT_SITE_CONTENT.hero.subtitle, MAX_LONG),
       primaryCta: asString(hero.primaryCta, DEFAULT_SITE_CONTENT.hero.primaryCta),
       secondaryCta: asString(hero.secondaryCta, DEFAULT_SITE_CONTENT.hero.secondaryCta),
-      image: asString(hero.image, DEFAULT_SITE_CONTENT.hero.image),
+      image: asString(hero.image, DEFAULT_SITE_CONTENT.hero.image, MAX_PATH),
     },
-    highlights: asStringArray(input.highlights, DEFAULT_SITE_CONTENT.highlights).slice(0, 4),
+    highlights: asStringArray(input.highlights, DEFAULT_SITE_CONTENT.highlights, 4, MAX_SHORT).slice(0, 4),
     camping: {
       kicker: asString(camping.kicker, DEFAULT_SITE_CONTENT.camping.kicker),
       title: asString(camping.title, DEFAULT_SITE_CONTENT.camping.title),
-      lead: asString(camping.lead, DEFAULT_SITE_CONTENT.camping.lead),
+      lead: asString(camping.lead, DEFAULT_SITE_CONTENT.camping.lead, MAX_LONG),
       badge: asString(camping.badge, DEFAULT_SITE_CONTENT.camping.badge),
       badgeColor: asString(camping.badgeColor, DEFAULT_SITE_CONTENT.camping.badgeColor),
-      trailers: (Array.isArray(camping.trailers) ? camping.trailers : DEFAULT_SITE_CONTENT.camping.trailers)
-        .map((trailer, index) =>
-          normalizeTrailer(trailer, DEFAULT_SITE_CONTENT.camping.trailers[index] ?? DEFAULT_SITE_CONTENT.camping.trailers[0])
-        ),
+      trailers: normalizeOfferTrailers(camping.trailers, DEFAULT_SITE_CONTENT.camping.trailers),
     },
     transport: {
       kicker: asString(transport.kicker, DEFAULT_SITE_CONTENT.transport.kicker),
       title: asString(transport.title, DEFAULT_SITE_CONTENT.transport.title),
-      lead: asString(transport.lead, DEFAULT_SITE_CONTENT.transport.lead),
+      lead: asString(transport.lead, DEFAULT_SITE_CONTENT.transport.lead, MAX_LONG),
       badge: asString(transport.badge, DEFAULT_SITE_CONTENT.transport.badge),
       badgeColor: asString(transport.badgeColor, DEFAULT_SITE_CONTENT.transport.badgeColor),
-      trailers: (Array.isArray(transport.trailers) ? transport.trailers : DEFAULT_SITE_CONTENT.transport.trailers)
-        .map((trailer, index) =>
-          normalizeTrailer(trailer, DEFAULT_SITE_CONTENT.transport.trailers[index] ?? DEFAULT_SITE_CONTENT.transport.trailers[0])
-        ),
+      trailers: normalizeOfferTrailers(transport.trailers, DEFAULT_SITE_CONTENT.transport.trailers),
     },
     contact: {
       kicker: asString(contact.kicker, DEFAULT_SITE_CONTENT.contact.kicker),
       title: asString(contact.title, DEFAULT_SITE_CONTENT.contact.title),
-      lead: asString(contact.lead, DEFAULT_SITE_CONTENT.contact.lead),
+      lead: asString(contact.lead, DEFAULT_SITE_CONTENT.contact.lead, MAX_LONG),
       phone: asString(contact.phone, DEFAULT_SITE_CONTENT.contact.phone),
       email: asString(contact.email, DEFAULT_SITE_CONTENT.contact.email),
       address: asString(contact.address, DEFAULT_SITE_CONTENT.contact.address),
@@ -142,12 +162,12 @@ const normalizeContent = (value: unknown): SiteContent => {
       privacy: {
         title: asString(privacy.title, DEFAULT_SITE_CONTENT.legal.privacy.title),
         updatedAt: asString(privacy.updatedAt, DEFAULT_SITE_CONTENT.legal.privacy.updatedAt),
-        body: asString(privacy.body, DEFAULT_SITE_CONTENT.legal.privacy.body),
+        body: asString(privacy.body, DEFAULT_SITE_CONTENT.legal.privacy.body, MAX_LEGAL),
       },
       terms: {
         title: asString(terms.title, DEFAULT_SITE_CONTENT.legal.terms.title),
         updatedAt: asString(terms.updatedAt, DEFAULT_SITE_CONTENT.legal.terms.updatedAt),
-        body: asString(terms.body, DEFAULT_SITE_CONTENT.legal.terms.body),
+        body: asString(terms.body, DEFAULT_SITE_CONTENT.legal.terms.body, MAX_LEGAL),
       },
     },
   };
@@ -163,6 +183,51 @@ const readContent = async (): Promise<SiteContent> => {
     }
     return DEFAULT_SITE_CONTENT;
   }
+};
+
+const collectReferencedUploads = (content: SiteContent): Set<string> => {
+  const refs = new Set<string>();
+  const add = (p: string) => {
+    if (typeof p !== 'string') return;
+    const name = p.startsWith('/uploads/') ? p.slice('/uploads/'.length) : null;
+    if (name && !name.includes('/') && !name.includes('..')) refs.add(name);
+  };
+  add(content.hero.image);
+  for (const section of [content.camping, content.transport]) {
+    for (const trailer of section.trailers) {
+      for (const img of trailer.images) add(img);
+    }
+  }
+  return refs;
+};
+
+// 10-minute grace period guards against racing an upload that hasn't been
+// saved into content yet, and gives an editor a brief undo window.
+const ORPHAN_GRACE_MS = 10 * 60 * 1000;
+
+const pruneOrphanUploads = async (content: SiteContent) => {
+  const refs = collectReferencedUploads(content);
+  let entries: string[];
+  try {
+    entries = await fs.readdir(uploadsDir);
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return;
+    throw err;
+  }
+  const cutoff = Date.now() - ORPHAN_GRACE_MS;
+  await Promise.all(
+    entries.map(async (name) => {
+      if (refs.has(name)) return;
+      const filePath = path.join(uploadsDir, name);
+      try {
+        const stat = await fs.stat(filePath);
+        if (stat.mtimeMs > cutoff) return;
+        await fs.unlink(filePath);
+      } catch (err) {
+        console.warn('[uploads] prune failed for', name, err);
+      }
+    })
+  );
 };
 
 const writeContent = async (content: SiteContent) => {
@@ -241,6 +306,15 @@ const adminLoginLimiter = rateLimit({
   limit: 10,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  message: { ok: false, error: 'rate_limited' },
+});
+
+const adminUploadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 30,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
   message: { ok: false, error: 'rate_limited' },
 });
 
@@ -279,13 +353,14 @@ app.put('/api/admin/content', requireAdmin, async (req, res) => {
   try {
     const saved = await writeContent(req.body);
     res.json({ ok: true, content: saved });
+    void pruneOrphanUploads(saved).catch((err) => console.warn('[uploads] prune failed', err));
   } catch (err) {
     console.error('[content] write failed', err);
     res.status(500).json({ ok: false, error: 'write_failed' });
   }
 });
 
-app.post('/api/admin/upload', requireAdmin, async (req, res) => {
+app.post('/api/admin/upload', adminUploadLimiter, requireAdmin, async (req, res) => {
   const fileName = typeof req.body?.fileName === 'string' ? req.body.fileName : 'upload';
   const dataUrl = typeof req.body?.dataUrl === 'string' ? req.body.dataUrl : '';
   const match = dataUrl.match(/^data:(image\/(?:jpeg|png|webp));base64,([a-z0-9+/=]+)$/i);
@@ -304,7 +379,9 @@ app.post('/api/admin/upload', requireAdmin, async (req, res) => {
     .replace(/[^a-z0-9-_]+/gi, '-')
     .replace(/^-+|-+$/g, '')
     .toLowerCase() || 'image';
-  const savedName = `${Date.now()}-${safeBase}.${ext}`;
+  // Random suffix avoids collisions when two uploads land in the same millisecond.
+  const suffix = crypto.randomBytes(4).toString('hex');
+  const savedName = `${Date.now()}-${suffix}-${safeBase}.${ext}`;
 
   await fs.mkdir(uploadsDir, { recursive: true });
   await fs.writeFile(path.join(uploadsDir, savedName), bytes);
