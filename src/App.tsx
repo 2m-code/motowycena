@@ -81,6 +81,17 @@ const TERMS_HASH = '#regulamin';
 const TERMS_PATH = '/regulamin';
 type View = 'main' | 'privacy' | 'terms';
 
+// Section anchors on the main view get clean URLs (e.g. /kempingowe) via
+// History API instead of #-fragments. SECTION_IDS maps URL path → element id.
+const SECTION_IDS: Record<string, string> = {
+  '/kempingowe': 'kempingowe',
+  '/transportowe': 'transportowe',
+  '/kontakt': 'kontakt',
+};
+const SECTION_PATH_BY_ID: Record<string, string> = Object.fromEntries(
+  Object.entries(SECTION_IDS).map(([path, id]) => [id, path])
+);
+
 const BUILT_TURNSTILE_SITE_KEY = process.env.TURNSTILE_SITE_KEY ?? '';
 
 declare global {
@@ -350,23 +361,24 @@ export default function App() {
       const next = getViewFromLocation();
       setView(next);
 
-      if (next === 'privacy') {
+      if (next === 'privacy' || next === 'terms') {
         window.scrollTo({ top: 0, behavior: 'auto' });
-      } else {
-        // Po powrocie z polityki: jeśli hash wskazuje sekcję, scrolluj do niej,
-        // w innym wypadku wjedź na samą górę.
-        const hash = window.location.hash;
-        requestAnimationFrame(() => {
-          if (hash && hash.length > 1 && hash !== PRIVACY_HASH) {
-            const el = document.querySelector(hash);
-            if (el) {
-              el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              return;
-            }
-          }
-          window.scrollTo({ top: 0, behavior: 'auto' });
-        });
+        return;
       }
+
+      // On main view: scroll to section if URL is /kempingowe etc, else top.
+      const path = window.location.pathname.replace(/\/$/, '') || '/';
+      const sectionId = SECTION_IDS[path];
+      requestAnimationFrame(() => {
+        if (sectionId) {
+          const el = document.getElementById(sectionId);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+          }
+        }
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      });
     };
 
     window.addEventListener('hashchange', onHashChange);
@@ -379,14 +391,37 @@ export default function App() {
 
   const goToMain = () => {
     const path = window.location.pathname.replace(/\/$/, '') || '/';
-    if (window.location.hash || path === PRIVACY_PATH || path === TERMS_PATH) {
-      // czysto: usuń hash z URL i wróć na górę
+    if (window.location.hash || path !== '/') {
       window.history.pushState('', document.title, '/' + window.location.search);
     }
     setView('main');
     setIsMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const navigateToSection = (sectionId: string, event?: { preventDefault: () => void }) => {
+    if (event) event.preventDefault();
+    setIsMenuOpen(false);
+    const targetPath = SECTION_PATH_BY_ID[sectionId];
+    if (targetPath && window.location.pathname !== targetPath) {
+      window.history.pushState({}, '', targetPath + window.location.search);
+    }
+    const el = document.getElementById(sectionId);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // On initial load with a section path (e.g. /kempingowe), scroll to that
+  // section once the main view has rendered.
+  useEffect(() => {
+    if (view !== 'main') return;
+    const path = window.location.pathname.replace(/\/$/, '') || '/';
+    const sectionId = SECTION_IDS[path];
+    if (!sectionId) return;
+    requestAnimationFrame(() => {
+      const el = document.getElementById(sectionId);
+      if (el) el.scrollIntoView({ behavior: 'auto', block: 'start' });
+    });
+  }, [view, content]);
 
   if (typeof window !== 'undefined' && window.location.pathname.replace(/\/$/, '') === '/admin') {
     return (
@@ -413,9 +448,15 @@ export default function App() {
             </Logo>
 
             <DesktopNav>
-              <NavLink href="#kempingowe">Kempingowe</NavLink>
-              <NavLink href="#transportowe">Transportowe</NavLink>
-              <NavContactLink href="#kontakt">Kontakt</NavContactLink>
+              <NavLink href="/kempingowe" onClick={(e) => navigateToSection('kempingowe', e)}>
+                Kempingowe
+              </NavLink>
+              <NavLink href="/transportowe" onClick={(e) => navigateToSection('transportowe', e)}>
+                Transportowe
+              </NavLink>
+              <NavContactLink href="/kontakt" onClick={(e) => navigateToSection('kontakt', e)}>
+                Kontakt
+              </NavContactLink>
             </DesktopNav>
 
             <MobileMenuButton
@@ -431,13 +472,13 @@ export default function App() {
         {/* Mobile menu */}
         <MobileMenu data-open={isMenuOpen} aria-hidden={!isMenuOpen}>
           <MobileMenuInner>
-            <MobileNavLink href="#kempingowe" onClick={() => setIsMenuOpen(false)}>
+            <MobileNavLink href="/kempingowe" onClick={(e) => navigateToSection('kempingowe', e)}>
               Przyczepy Kempingowe
             </MobileNavLink>
-            <MobileNavLink href="#transportowe" onClick={() => setIsMenuOpen(false)}>
+            <MobileNavLink href="/transportowe" onClick={(e) => navigateToSection('transportowe', e)}>
               Przyczepy Transportowe
             </MobileNavLink>
-            <MobileContactLink href="#kontakt" onClick={() => setIsMenuOpen(false)}>
+            <MobileContactLink href="/kontakt" onClick={(e) => navigateToSection('kontakt', e)}>
               Kontakt
             </MobileContactLink>
           </MobileMenuInner>
@@ -481,8 +522,18 @@ export default function App() {
               {content.hero.subtitle}
             </HeroSubtitleV2>
             <HeroButtons>
-              <HeroPrimaryBtnDark href="#kempingowe">{content.hero.primaryCta}</HeroPrimaryBtnDark>
-              <HeroSecondaryBtnV2 href="#kontakt">{content.hero.secondaryCta}</HeroSecondaryBtnV2>
+              <HeroPrimaryBtnDark
+                href="/kempingowe"
+                onClick={(e) => navigateToSection('kempingowe', e)}
+              >
+                {content.hero.primaryCta}
+              </HeroPrimaryBtnDark>
+              <HeroSecondaryBtnV2
+                href="/kontakt"
+                onClick={(e) => navigateToSection('kontakt', e)}
+              >
+                {content.hero.secondaryCta}
+              </HeroSecondaryBtnV2>
             </HeroButtons>
           </HeroTextBlock>
         </HeroInner2>
