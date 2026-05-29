@@ -51,6 +51,12 @@ export const GlobalStyle = createGlobalStyle`
     max-width: 100%;
   }
 
+  /* <picture> is a wrapper for format/size negotiation; make it transparent
+     to flex/grid layouts so the inner <img> behaves like the original styled img. */
+  picture {
+    display: contents;
+  }
+
   ::selection {
     background: #0066FF;
     color: #FFFFFF;

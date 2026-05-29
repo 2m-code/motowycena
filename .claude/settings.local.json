@@ -3,7 +3,32 @@
     "allow": [
       "Bash(npx tsc *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(curl -s -H 'User-Agent: Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/130.0.0.0 Safari/537.36' 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap')",
+      "Bash(curl -sS -H 'User-Agent: Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/130.0.0.0 Safari/537.36' -o public/fonts/inter-latin.woff2 https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2)",
+      "Bash(curl -sS -H 'User-Agent: Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/130.0.0.0 Safari/537.36' -o public/fonts/inter-latin-ext.woff2 https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa25L7W0Q5n-wU.woff2)",
+      "Bash(node *)",
+      "Bash(npm run *)",
+      "Bash(curl -sI http://localhost:3001/fonts/inter-latin.woff2)",
+      "Bash(kill 64961)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(disown)",
+      "Bash(curl -sI http://localhost:3001/assets/index-BTvKYz8L.js)",
+      "Bash(curl -sI http://localhost:3001/)",
+      "Bash(kill 65177)",
+      "Bash(VITE_TURNSTILE_SITE_KEY=\"0xFAKE_TEST_KEY_123\" npm run build)",
+      "Bash(/usr/bin/grep -c \"challenges.cloudflare.com\" dist/assets/*.js)",
+      "Bash(/usr/bin/grep -oE \"0xFAKE_TEST_KEY_[0-9]+\" dist/assets/*.js)",
+      "Bash(/usr/bin/grep -c \"/api/config\" dist/assets/*.js)",
+      "Bash(sed -n '1346,1365p' src/App.tsx)",
+      "Bash(sed -n '1455,1465p' src/App.tsx)",
+      "Bash(grep -rn \"<a \\\\|styled\\\\.a\\\\`\\\\|styled.a$\" src/App.tsx src/components/)",
+      "Bash(xargs kill)",
+      "Bash(curl -s http://localhost:3001/)",
+      "Bash(curl -s -c /tmp/c.txt -X POST http://localhost:3001/api/admin/login -H 'Content-Type: application/json' -d '{\"password\":\"test-admin\"}' -o /dev/null)",
+      "Bash(curl -s http://localhost:3001/api/content)",
+      "Bash(curl -s -b /tmp/c.txt -X PUT http://localhost:3001/api/admin/content -H 'Content-Type: application/json' --data-binary @/tmp/content.json -o /dev/null)",
+      "Bash(curl -s https://eprzyczepy.eu/)"
     ]
   }
 }
