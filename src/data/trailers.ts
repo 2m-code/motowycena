@@ -137,7 +137,7 @@ W ofercie posiadamy również inne przyczepy.`,
 export const TRANSPORTS: Trailer[] = [
   {
     id: 1,
-    name: "Laweta samochodowa – dwuosiowa",
+    name: "Laweta samochodowa - dwuosiowa",
     priceShort: "80 zł / doba",
     description: `Do wynajęcia solidna, dwuosiowa laweta samochodowa, specjalnie przygotowana pod transport niskich samochodów (sportowych, tuningowanych, z dokładkami, splitterami itp.).
 
@@ -147,10 +147,10 @@ Długość platformy 400cm, szerokość 195cm, posiada bardzo niskie korytka boc
 
 Dlaczego ta laweta?
 
-Niski kąt najazdu – bez problemu wjedziesz obniżonym autem
+Niski kąt najazdu - bez problemu wjedziesz obniżonym autem
 stabilne najazdy
-Dwie osie – bardzo dobra stabilność w trasie
-Wciągarka ręczna – pomocna przy aucie niesprawnym
+Dwie osie - bardzo dobra stabilność w trasie
+Wciągarka ręczna - pomocna przy aucie niesprawnym
 Liczne punkty mocowania pasów
 Koło zapasowe
 

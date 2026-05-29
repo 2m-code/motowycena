@@ -4,13 +4,15 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "start": "tsx server.ts",
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
+    "build:server": "tsc server.ts --target ES2022 --module NodeNext --moduleResolution NodeNext --esModuleInterop --skipLibCheck --outDir .release-server",
+    "release:cyberfolks": "node scripts/make-cyberfolks-release.mjs",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "images:variants": "node scripts/generate-image-variants.mjs",
-    "start": "tsx server.ts",
     "server": "tsx server.ts",
     "server:dev": "tsx watch server.ts"
   },
