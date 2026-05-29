@@ -8,6 +8,11 @@ export default defineConfig(({ mode }) => {
   return {
     base,
     plugins: [react()],
+    define: {
+      // Inline TURNSTILE_SITE_KEY for the dev fallback path in App.tsx
+      // (production reads it at runtime from /api/config).
+      'process.env.TURNSTILE_SITE_KEY': JSON.stringify(env.TURNSTILE_SITE_KEY ?? ''),
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
