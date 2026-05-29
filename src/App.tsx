@@ -9,10 +9,12 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 import AdminPanel from './components/AdminPanel';
 
 const PRIVACY_HASH = '#polityka-prywatnosci';
+const PRIVACY_PATH = '/polityka-prywatnosci';
 const TERMS_HASH = '#regulamin';
+const TERMS_PATH = '/regulamin';
 type View = 'main' | 'privacy' | 'terms';
 
-const TURNSTILE_SITE_KEY = process.env.TURNSTILE_SITE_KEY ?? '';
+const BUILT_TURNSTILE_SITE_KEY = process.env.TURNSTILE_SITE_KEY ?? '';
 
 declare global {
   interface Window {
@@ -41,10 +43,11 @@ const FORM_ERRORS: Record<string, string> = {
   send_failed: 'Nie udało się wysłać wiadomości. Spróbuj ponownie lub zadzwoń.',
 };
 
-function getViewFromHash(): View {
+function getViewFromLocation(): View {
   if (typeof window === 'undefined') return 'main';
-  if (window.location.hash === PRIVACY_HASH) return 'privacy';
-  if (window.location.hash === TERMS_HASH) return 'terms';
+  const path = window.location.pathname.replace(/\/$/, '') || '/';
+  if (path === PRIVACY_PATH || window.location.hash === PRIVACY_HASH) return 'privacy';
+  if (path === TERMS_PATH || window.location.hash === TERMS_HASH) return 'terms';
   return 'main';
 }
 
@@ -127,7 +130,8 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
 export default function App() {
   const [content, setContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [view, setView] = useState<View>(() => getViewFromHash());
+  const [view, setView] = useState<View>(() => getViewFromLocation());
+  const [turnstileSiteKey, setTurnstileSiteKey] = useState('');
   const [formName, setFormName] = useState('');
   const [formPhone, setFormPhone] = useState('');
   const [formMessage, setFormMessage] = useState('');
@@ -137,6 +141,23 @@ export default function App() {
   const turnstileRef = useRef<HTMLDivElement | null>(null);
   const turnstileWidgetId = useRef<string | null>(null);
   const turnstileToken = useRef<string>('');
+
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      setTurnstileSiteKey(BUILT_TURNSTILE_SITE_KEY);
+      return;
+    }
+    fetch('/api/config')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { turnstileSiteKey?: unknown } | null) => {
+        if (typeof data?.turnstileSiteKey === 'string') {
+          setTurnstileSiteKey(data.turnstileSiteKey);
+        }
+      })
+      .catch(() => {
+        setTurnstileSiteKey('');
+      });
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.pathname.replace(/\/$/, '') === '/admin') return;
@@ -157,11 +178,11 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!TURNSTILE_SITE_KEY) return;
+    if (!turnstileSiteKey) return;
     const renderWidget = () => {
       if (!window.turnstile || !turnstileRef.current || turnstileWidgetId.current) return;
       turnstileWidgetId.current = window.turnstile.render(turnstileRef.current, {
-        sitekey: TURNSTILE_SITE_KEY,
+        sitekey: turnstileSiteKey,
         theme: 'dark',
         callback: (token) => { turnstileToken.current = token; },
         'expired-callback': () => { turnstileToken.current = ''; },
@@ -185,7 +206,7 @@ export default function App() {
     script.addEventListener('load', renderWidget);
     document.head.appendChild(script);
     return () => script.removeEventListener('load', renderWidget);
-  }, []);
+  }, [turnstileSiteKey]);
 
   const handleContactSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -200,7 +221,7 @@ export default function App() {
       setFormConsent(false);
       return;
     }
-    if (TURNSTILE_SITE_KEY && !turnstileToken.current) {
+    if (turnstileSiteKey && !turnstileToken.current) {
       setFormErrorCode('captcha_required');
       setFormStatus('error');
       return;
@@ -240,7 +261,7 @@ export default function App() {
 
   useEffect(() => {
     const onHashChange = () => {
-      const next = getViewFromHash();
+      const next = getViewFromLocation();
       setView(next);
 
       if (next === 'privacy') {
@@ -263,13 +284,18 @@ export default function App() {
     };
 
     window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
+    window.addEventListener('popstate', onHashChange);
+    return () => {
+      window.removeEventListener('hashchange', onHashChange);
+      window.removeEventListener('popstate', onHashChange);
+    };
   }, []);
 
   const goToMain = () => {
-    if (window.location.hash) {
+    const path = window.location.pathname.replace(/\/$/, '') || '/';
+    if (window.location.hash || path === PRIVACY_PATH || path === TERMS_PATH) {
       // czysto: usuń hash z URL i wróć na górę
-      window.history.pushState('', document.title, window.location.pathname + window.location.search);
+      window.history.pushState('', document.title, '/' + window.location.search);
     }
     setView('main');
     setIsMenuOpen(false);
@@ -556,7 +582,7 @@ export default function App() {
                     <a href={PRIVACY_HASH}>Polityka prywatności</a>.
                   </ConsentLabel>
                 </ConsentRow>
-                {TURNSTILE_SITE_KEY && <TurnstileWrapper ref={turnstileRef} />}
+                {turnstileSiteKey && <TurnstileWrapper ref={turnstileRef} />}
                 <FormSubmit type="submit" disabled={formStatus === 'sending'}>
                   {formStatus === 'sending' ? 'Wysyłanie...' : 'Wyślij Wiadomość'}
                 </FormSubmit>
