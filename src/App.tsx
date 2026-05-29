@@ -1,12 +1,79 @@
-import { motion, AnimatePresence } from 'motion/react';
 import { Truck, MapPin, Phone, Mail, CheckCircle2, Menu, X } from 'lucide-react';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import {
+  Suspense,
+  lazy,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type ImgHTMLAttributes,
+} from 'react';
 import styled, { css } from 'styled-components';
 import { DEFAULT_SITE_CONTENT, imgUrl, type SiteContent, type Trailer } from './data/siteContent';
 import { media } from './styles/theme';
-import CookieConsent from './components/CookieConsent';
-import PrivacyPolicy from './components/PrivacyPolicy';
-import AdminPanel from './components/AdminPanel';
+
+// Maps a source path like 'trailers/T1.jpg' to its WebP / small variants
+// produced by scripts/generate-image-variants.mjs. Returns null when the
+// source isn't a known image format or sits outside the variant pipeline
+// (e.g. admin uploads under /uploads/), in which case the caller should
+// fall back to a plain <img>.
+type ImageSources = { jpg: string; webp: string; jpgSm: string; webpSm: string };
+function deriveImageSources(rawSrc: string): ImageSources | null {
+  if (rawSrc.includes('/uploads/')) return null;
+  const match = rawSrc.match(/^(.*)\.(jpe?g|png)$/i);
+  if (!match) return null;
+  const base = match[1];
+  return {
+    jpg: rawSrc,
+    webp: `${base}.webp`,
+    jpgSm: `${base}-sm.jpg`,
+    webpSm: `${base}-sm.webp`,
+  };
+}
+
+type ResponsiveVariant = 'wide' | 'thumb';
+type ResponsiveImageProps = Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'srcSet'> & {
+  src: string;
+  variant: ResponsiveVariant;
+  sizes?: string;
+};
+
+function ResponsiveImage({ src, variant, sizes, className, ...rest }: ResponsiveImageProps) {
+  const resolved = imgUrl(src);
+  const sources = deriveImageSources(resolved);
+
+  if (!sources) {
+    return <img {...rest} src={resolved} className={className} />;
+  }
+
+  if (variant === 'thumb') {
+    return (
+      <picture>
+        <source type="image/webp" srcSet={sources.webpSm} />
+        <img {...rest} src={sources.jpgSm} className={className} />
+      </picture>
+    );
+  }
+
+  const widthSrcset = (small: string, large: string) => `${small} 500w, ${large} 1280w`;
+  return (
+    <picture>
+      <source type="image/webp" srcSet={widthSrcset(sources.webpSm, sources.webp)} sizes={sizes} />
+      <img
+        {...rest}
+        src={sources.jpg}
+        srcSet={widthSrcset(sources.jpgSm, sources.jpg)}
+        sizes={sizes}
+        className={className}
+      />
+    </picture>
+  );
+}
+// Code-split: admin panel, legal pages, and the cookie banner aren't needed
+// for the initial public render — defer them off the LCP critical path.
+const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
+const AdminPanel = lazy(() => import('./components/AdminPanel'));
+const CookieConsent = lazy(() => import('./components/CookieConsent'));
 
 const PRIVACY_HASH = '#polityka-prywatnosci';
 const PRIVACY_PATH = '/polityka-prywatnosci';
@@ -61,24 +128,42 @@ type TrailerRowProps = {
 
 function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
   const [activeImage, setActiveImage] = useState(trailer.images[0]);
+  const cardRef = useRef<HTMLElement | null>(null);
+  const [inView, setInView] = useState(false);
 
   useEffect(() => {
     setActiveImage(trailer.images[0]);
   }, [trailer.images]);
 
+  useEffect(() => {
+    const node = cardRef.current;
+    if (!node || typeof IntersectionObserver === 'undefined') {
+      setInView(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '-80px' }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <TrailerCard
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.5 }}
-    >
+    <TrailerCard ref={cardRef} data-in-view={inView}>
       <TrailerGrid $reverse={!!reverse}>
         {/* GALLERY */}
         <TrailerGallery>
           <TrailerImageWrap>
             <TrailerMainImg
-              src={imgUrl(activeImage || trailer.images[0] || 'trailers/T1.jpg')}
+              src={activeImage || trailer.images[0] || 'trailers/T1.jpg'}
+              variant="wide"
+              sizes="(min-width: 768px) 50vw, 100vw"
               alt={trailer.name}
               loading="lazy"
               decoding="async"
@@ -100,7 +185,8 @@ function TrailerRow({ trailer, badge, badgeColor, reverse }: TrailerRowProps) {
                   aria-pressed={activeImage === img}
                 >
                   <ThumbImg
-                    src={imgUrl(img)}
+                    src={img}
+                    variant="thumb"
                     alt={`${trailer.name} - zdjęcie ${idx + 1}`}
                     loading="lazy"
                     decoding="async"
@@ -303,7 +389,11 @@ export default function App() {
   };
 
   if (typeof window !== 'undefined' && window.location.pathname.replace(/\/$/, '') === '/admin') {
-    return <AdminPanel />;
+    return (
+      <Suspense fallback={null}>
+        <AdminPanel />
+      </Suspense>
+    );
   }
 
   return (
@@ -319,7 +409,7 @@ export default function App() {
               onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && goToMain()}
               aria-label="Przejdź na stronę główną"
             >
-              <LogoImage src="/logo.jpeg" alt="EPRZYCZEPY.EU" />
+              <LogoImage src="/logo.jpeg" variant="thumb" alt="EPRZYCZEPY.EU" />
             </Logo>
 
             <DesktopNav>
@@ -339,42 +429,39 @@ export default function App() {
         </Container>
 
         {/* Mobile menu */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <MobileMenu
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <MobileMenuInner>
-                <MobileNavLink href="#kempingowe" onClick={() => setIsMenuOpen(false)}>
-                  Przyczepy Kempingowe
-                </MobileNavLink>
-                <MobileNavLink href="#transportowe" onClick={() => setIsMenuOpen(false)}>
-                  Przyczepy Transportowe
-                </MobileNavLink>
-                <MobileContactLink href="#kontakt" onClick={() => setIsMenuOpen(false)}>
-                  Kontakt
-                </MobileContactLink>
-              </MobileMenuInner>
-            </MobileMenu>
-          )}
-        </AnimatePresence>
+        <MobileMenu data-open={isMenuOpen} aria-hidden={!isMenuOpen}>
+          <MobileMenuInner>
+            <MobileNavLink href="#kempingowe" onClick={() => setIsMenuOpen(false)}>
+              Przyczepy Kempingowe
+            </MobileNavLink>
+            <MobileNavLink href="#transportowe" onClick={() => setIsMenuOpen(false)}>
+              Przyczepy Transportowe
+            </MobileNavLink>
+            <MobileContactLink href="#kontakt" onClick={() => setIsMenuOpen(false)}>
+              Kontakt
+            </MobileContactLink>
+          </MobileMenuInner>
+        </MobileMenu>
       </HeaderBar>
 
       <MainContent>
       {view === 'privacy' ? (
-        <PrivacyPolicy document={content.legal.privacy} onBack={goToMain} />
+        <Suspense fallback={null}>
+          <PrivacyPolicy document={content.legal.privacy} onBack={goToMain} />
+        </Suspense>
       ) : view === 'terms' ? (
-        <PrivacyPolicy document={content.legal.terms} onBack={goToMain} />
+        <Suspense fallback={null}>
+          <PrivacyPolicy document={content.legal.terms} onBack={goToMain} />
+        </Suspense>
       ) : (
       <>
       {/* HERO SECTION */}
       <HeroSection2>
         <HeroBg>
           <HeroBgImg
-            src={imgUrl(content.hero.image || DEFAULT_SITE_CONTENT.hero.image)}
+            src={content.hero.image || DEFAULT_SITE_CONTENT.hero.image}
+            variant="wide"
+            sizes="100vw"
             alt={content.hero.titleAccent}
             fetchPriority="high"
             decoding="async"
@@ -384,11 +471,7 @@ export default function App() {
         </HeroBg>
 
         <HeroInner2>
-          <HeroTextBlock
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
+          <HeroTextBlock>
             <HeroKickerV2>{content.hero.kicker}</HeroKickerV2>
             <HeroTitleV2>
               {content.hero.titlePrefix} <br />
@@ -634,7 +717,9 @@ export default function App() {
       </Footer>
 
       {/* COOKIE CONSENT */}
-      <CookieConsent />
+      <Suspense fallback={null}>
+        <CookieConsent />
+      </Suspense>
     </PageWrapper>
   );
 }
@@ -710,7 +795,7 @@ const Logo = styled.div`
   flex: 0 1 auto;
 `;
 
-const LogoImage = styled.img`
+const LogoImage = styled(ResponsiveImage)`
   height: 5rem;
   width: auto;
   display: block;
@@ -773,9 +858,26 @@ const MobileMenuButton = styled.button`
   }
 `;
 
-const MobileMenu = styled(motion.div)`
+const MobileMenu = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
   background: #ffffff;
   border-bottom: 1px solid rgba(30, 41, 59, 0.1);
+  opacity: 0;
+  transform: translateY(-10px);
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 200ms ease, visibility 0s linear 200ms;
+
+  &[data-open='true'] {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 200ms ease, transform 200ms ease, visibility 0s;
+  }
 
   ${media.md} {
     display: none;
@@ -822,13 +924,18 @@ const HeroBg = styled.div`
   z-index: 0;
 `;
 
-const HeroBgImg = styled.img`
+const HeroBgImg = styled(ResponsiveImage)`
   width: 100%;
   height: 100%;
   object-fit: cover;
 `;
 
-const HeroTextBlock = styled(motion.div)`
+const HeroTextBlock = styled.div`
+  @keyframes heroFadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  animation: heroFadeUp 800ms ease both;
   flex: 1;
   max-width: 42rem;
 `;
@@ -1096,6 +1203,11 @@ const ContactSection = styled.section`
   background: #1e293b;
   color: #ffffff;
 
+  /* WCAG AA: brand blue #0066ff on this dark bg is 3.48:1 — fails. */
+  ${SectionKicker} {
+    color: #60a5fa;
+  }
+
   ${media.md} {
     padding-top: 4rem;
   }
@@ -1257,7 +1369,7 @@ const FormLabel = styled.label`
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #94a3b8;
+  color: #cbd5e1;
   margin-bottom: 0.625rem;
 `;
 
@@ -1358,17 +1470,19 @@ const ConsentCheckbox = styled.input`
 
 const ConsentLabel = styled.label`
   font-size: 0.78rem;
-  color: #94a3b8;
+  color: #cbd5e1;
   line-height: 1.5;
   cursor: pointer;
 
   a {
-    color: #0066ff;
-    text-decoration: none;
+    color: #60a5fa;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 
   a:hover {
-    text-decoration: underline;
+    color: #93c5fd;
   }
 `;
 
@@ -1511,12 +1625,20 @@ const FooterCreditBrand = styled.a`
 `;
 
 /* ---------- TrailerRow ---------- */
-const TrailerCard = styled(motion.article)`
+const TrailerCard = styled.article`
   background: #ffffff;
   border-radius: 24px;
   overflow: hidden;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   border: 1px solid #e2e8f0;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 500ms ease, transform 500ms ease;
+
+  &[data-in-view='true'] {
+    opacity: 1;
+    transform: translateY(0);
+  }
 `;
 
 const TrailerGrid = styled.div<{ $reverse: boolean }>`
@@ -1556,7 +1678,7 @@ const TrailerImageWrap = styled.div`
   background: #cbd5e1;
 `;
 
-const TrailerMainImg = styled.img`
+const TrailerMainImg = styled(ResponsiveImage)`
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1599,7 +1721,7 @@ const ThumbButton = styled.button<{ $active: boolean }>`
     `}
 `;
 
-const ThumbImg = styled.img`
+const ThumbImg = styled(ResponsiveImage)`
   width: 100%;
   height: 100%;
   object-fit: cover;

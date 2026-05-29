@@ -26,7 +26,11 @@ app.use((_req, res, next) => {
   next();
 });
 app.use(express.json({ limit: '12mb' }));
-app.use('/uploads', express.static(uploadsDir, { maxAge: '7d' }));
+// Uploads have a `${Date.now()}-${random}-` prefix and never get rewritten — safe to cache long.
+app.use('/uploads', express.static(uploadsDir, {
+  maxAge: '30d',
+  immutable: true,
+}));
 
 const {
   SMTP_HOST,
@@ -493,17 +497,86 @@ app.post('/api/contact', contactCors, contactLimiter, async (req, res) => {
 const acmePath = path.join(__dirname, '.well-known', 'acme-challenge');
 app.use('/.well-known/acme-challenge', express.static(acmePath));
 
-app.use(express.static(distPath, { index: false, maxAge: '1h' }));
-app.get('*', async (req, res, next) => {
+// HTML is dynamic (LCP preload rewrite); serve via serveIndex before static.
+const indexPath = path.join(distPath, 'index.html');
+let cachedIndexHtml: string | null = null;
+
+const resolveHeroImagePath = (raw: string | undefined): string => {
+  const fallback = '/trailers/T1.jpg';
+  if (!raw) return fallback;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  return raw.startsWith('/') ? raw : `/${raw}`;
+};
+
+const buildHeroPreload = (heroUrl: string): string => {
+  // Mirror the ResponsiveImage / generate-image-variants logic: anything outside
+  // /uploads/ that ends in .jpg/.jpeg/.png has webp + -sm variants on disk.
+  const variantMatch = !heroUrl.includes('/uploads/') && heroUrl.match(/^(.*)\.(jpe?g|png)$/i);
+  const heroHref = escapeHtml(heroUrl);
+  if (!variantMatch) {
+    return `<link rel="preload" as="image" href="${heroHref}" fetchpriority="high" data-lcp-preload>`;
+  }
+  const base = escapeHtml(variantMatch[1]);
+  return (
+    `<link rel="preload" as="image" href="${heroHref}" ` +
+    `imagesrcset="${base}-sm.webp 500w, ${base}.webp 1280w" ` +
+    `imagesizes="100vw" type="image/webp" fetchpriority="high" data-lcp-preload>`
+  );
+};
+
+const buildIndexHtml = async (): Promise<string> => {
+  if (!cachedIndexHtml) cachedIndexHtml = await fs.readFile(indexPath, 'utf8');
+  const content = await readContent();
+  const heroUrl = resolveHeroImagePath(content.hero.image);
+  return cachedIndexHtml.replace(
+    /<link rel="preload"[^>]*data-lcp-preload[^>]*>/,
+    buildHeroPreload(heroUrl)
+  );
+};
+
+const serveIndex: express.RequestHandler = async (req, res, next) => {
   if (req.path.startsWith('/api/')) return next();
   if (req.path.startsWith('/.well-known/')) return res.status(404).end();
   try {
-    await fs.access(path.join(distPath, 'index.html'));
-    res.sendFile(path.join(distPath, 'index.html'));
+    await fs.access(indexPath);
   } catch {
     next();
+    return;
   }
-});
+  try {
+    const html = await buildIndexHtml();
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=60, must-revalidate');
+    res.send(html);
+  } catch (err) {
+    console.error('[index] render failed', err);
+    res.sendFile(indexPath);
+  }
+};
+
+app.get(['/', '/index.html'], serveIndex);
+
+// Cache policy:
+//   /assets/, /fonts/                                → 1 year immutable (content-addressed or stable URLs)
+//   image files (jpg/png/webp/avif/svg/gif/ico)      → 30 days (photos/branding; ETag handles edits)
+//   anything else                                    → 1 hour (default for unclassified files)
+app.use(
+  express.static(distPath, {
+    maxAge: '1h',
+    index: false,
+    setHeaders: (res, filePath) => {
+      if (/[\\/](assets|fonts)[\\/]/.test(filePath)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        return;
+      }
+      if (/\.(jpe?g|png|webp|avif|svg|gif|ico)$/i.test(filePath)) {
+        res.setHeader('Cache-Control', 'public, max-age=2592000, stale-while-revalidate=86400');
+      }
+    },
+  })
+);
+
+app.get('*', serveIndex);
 
 const port = Number(PORT ?? MAIL_SERVER_PORT ?? 3001);
 app.listen(port, () => console.log(`[mail] listening :${port}`));

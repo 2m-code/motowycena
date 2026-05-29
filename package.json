@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
+    "images:variants": "node scripts/generate-image-variants.mjs",
     "server": "tsx server.ts",
     "server:dev": "tsx watch server.ts"
   },

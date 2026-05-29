@@ -8,9 +8,6 @@ export default defineConfig(({ mode }) => {
   return {
     base,
     plugins: [react()],
-    define: {
-      'process.env.TURNSTILE_SITE_KEY': JSON.stringify(env.TURNSTILE_SITE_KEY ?? ''),
-    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
