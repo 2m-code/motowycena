@@ -90,7 +90,7 @@ const Banner = styled(motion.div)`
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 0.75rem;
+  padding: 0.5rem;
   pointer-events: none;
 
   ${media.sm} {
@@ -110,16 +110,22 @@ const Inner = styled.div`
   background: #ffffff;
   color: #1e293b;
   border: 1px solid #e2e8f0;
-  border-radius: 16px;
+  border-radius: 14px;
   box-shadow: 0 20px 45px -12px rgba(15, 23, 42, 0.25);
-  padding: 1.25rem 1.25rem 1.25rem 1.25rem;
+  padding: 1rem 2.75rem 1rem 1rem;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 0.75rem;
+  max-height: calc(100svh - 1rem);
+  overflow-y: auto;
 
   ${media.sm} {
+    border-radius: 16px;
     padding: 1.5rem 3rem 1.5rem 1.5rem;
+    gap: 1rem;
+    max-height: none;
+    overflow: visible;
   }
 
   ${media.md} {
@@ -132,14 +138,19 @@ const Inner = styled.div`
 
 const IconWrap = styled.div`
   flex-shrink: 0;
-  width: 3rem;
-  height: 3rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 12px;
   background: rgba(0, 102, 255, 0.1);
   color: #0066ff;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  ${media.sm} {
+    width: 3rem;
+    height: 3rem;
+  }
 `;
 
 const Content = styled.div`
@@ -148,16 +159,20 @@ const Content = styled.div`
 `;
 
 const Title = styled.h3`
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
   margin: 0 0 0.35rem 0;
   color: #1e293b;
+
+  ${media.sm} {
+    font-size: 15px;
+  }
 `;
 
 const Text = styled.p`
-  font-size: 13px;
-  line-height: 1.55;
+  font-size: 12.5px;
+  line-height: 1.45;
   color: #475569;
   margin: 0;
 
@@ -180,7 +195,7 @@ const PolicyLink = styled.a`
 
 const Actions = styled.div`
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.5rem;
   width: 100%;
 
@@ -192,9 +207,9 @@ const Actions = styled.div`
 
 const baseBtn = `
   flex: 1;
-  padding: 0.75rem 1.25rem;
+  padding: 0.7rem 0.75rem;
   border-radius: 10px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
   text-align: center;
   cursor: pointer;
@@ -203,6 +218,11 @@ const baseBtn = `
 
   &:active {
     transform: translateY(1px);
+  }
+
+  ${media.sm} {
+    padding: 0.75rem 1.25rem;
+    font-size: 13px;
   }
 `;
 
@@ -233,8 +253,8 @@ const AcceptBtn = styled.button`
 
 const CloseBtn = styled.button`
   position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
+  top: 0.65rem;
+  right: 0.65rem;
   width: 2rem;
   height: 2rem;
   border-radius: 9999px;

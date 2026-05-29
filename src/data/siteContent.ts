@@ -55,8 +55,8 @@ export type SiteContent = {
 export const DEFAULT_SITE_CONTENT: SiteContent = {
   hero: {
     kicker: 'Twój Partner w Podróży',
-    titlePrefix: 'Kierunek -',
-    titleAccent: 'wolność.',
+    titlePrefix: 'Wypożyczalnia przyczep kempingowych',
+    titleAccent: 'w Garkach.',
     subtitle:
       'Wynajmujemy komfortowe przyczepy kempingowe znanych marek takich jak Tabbert, Lunar, Dethleffs.',
     primaryCta: 'Zobacz Przyczepy',

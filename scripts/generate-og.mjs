@@ -47,7 +47,7 @@ const PILL_X = 52;
 const PILL_Y = 52;
 const PILL_H = 38;
 const PILL_R = 10;
-const pillText = 'MOTOWYCENA RAFAŁ PELCZAR';
+const pillText = 'EPRZYCZEPY.EU';
 ctx.font = 'bold 13px Arial';
 const pillTW = ctx.measureText(pillText).width;
 const PILL_W = pillTW + 32;
@@ -102,15 +102,15 @@ ctx.fillText('ZADZWOŃ', 52, H - 52);
 
 ctx.fillStyle = '#ffffff';
 ctx.font = 'bold 28px Arial';
-ctx.fillText('+48 509 146 666', 52, H - 22);
+ctx.fillText('+48 692 376 595', 52, H - 22);
 
 // --- URL po prawej ---
 ctx.fillStyle = 'rgba(255,255,255,0.4)';
 ctx.font = '16px Arial';
 ctx.textAlign = 'right';
-ctx.fillText('motowycena.pl', W - 52, H - 32);
+ctx.fillText('eprzyczepy.eu', W - 52, H - 32);
 
 // --- eksport ---
 const jpeg = canvas.toBuffer('image/jpeg', 92);
 writeFileSync(join(root, 'public/og-image.jpg'), jpeg);
-console.log(`✓ public/og-image.jpg — ${(jpeg.length / 1024).toFixed(0)} kB`);
+console.log(`✓ public/og-image.jpg - ${(jpeg.length / 1024).toFixed(0)} kB`);

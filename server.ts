@@ -19,7 +19,6 @@ const adminCookieName = 'eprzyczepy_admin';
 const app = express();
 app.set('trust proxy', 1);
 app.use(express.json({ limit: '12mb' }));
-app.use(cors());
 app.use('/uploads', express.static(uploadsDir, { maxAge: '7d' }));
 
 const {
@@ -32,12 +31,27 @@ const {
   MAIL_TO,
   PORT,
   MAIL_SERVER_PORT,
+  CORS_ORIGIN,
+  TURNSTILE_SITE_KEY,
   TURNSTILE_SECRET_KEY,
   ADMIN_PASSWORD,
   ADMIN_SESSION_SECRET,
   SESSION_SECRET,
   NODE_ENV,
 } = process.env;
+
+const allowedOrigins = (CORS_ORIGIN ?? 'https://www.eprzyczepy.eu,https://eprzyczepy.eu,http://localhost:3000,http://localhost:3006')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const contactCors = cors({
+  origin(origin, cb) {
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error('cors_not_allowed'));
+  },
+  methods: ['POST', 'OPTIONS'],
+});
 
 if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !MAIL_FROM || !MAIL_TO) {
   console.warn('[mail] SMTP env vars missing — /api/contact will 500 until configured.');
@@ -51,6 +65,7 @@ if (!ADMIN_PASSWORD) {
 if (!ADMIN_SESSION_SECRET && !SESSION_SECRET && NODE_ENV === 'production') {
   console.warn('[admin] ADMIN_SESSION_SECRET or SESSION_SECRET should be set in production.');
 }
+const turnstileEnabled = Boolean(TURNSTILE_SITE_KEY && TURNSTILE_SECRET_KEY);
 
 const transporter = nodemailer.createTransport({
   host: SMTP_HOST,
@@ -244,6 +259,12 @@ const adminLoginLimiter = rateLimit({
   message: { ok: false, error: 'rate_limited' },
 });
 
+app.get('/api/config', (_req, res) => {
+  res.json({
+    turnstileSiteKey: turnstileEnabled ? TURNSTILE_SITE_KEY : '',
+  });
+});
+
 app.get('/api/content', async (_req, res) => {
   res.json(await readContent());
 });
@@ -328,7 +349,8 @@ async function verifyTurnstile(token: string, ip: string | undefined): Promise<b
   }
 }
 
-app.post('/api/contact', contactLimiter, async (req, res) => {
+app.options('/api/contact', contactCors);
+app.post('/api/contact', contactCors, contactLimiter, async (req, res) => {
   const { name, phone, message, website, consent, turnstileToken } = req.body ?? {};
 
   if (typeof website === 'string' && website.length > 0) {
@@ -347,7 +369,7 @@ app.post('/api/contact', contactLimiter, async (req, res) => {
     return res.status(400).json({ ok: false, error: 'invalid_input' });
   }
 
-  if (TURNSTILE_SECRET_KEY) {
+  if (turnstileEnabled) {
     if (typeof turnstileToken !== 'string' || turnstileToken.length === 0) {
       return res.status(400).json({ ok: false, error: 'captcha_required' });
     }
@@ -376,8 +398,15 @@ app.post('/api/contact', contactLimiter, async (req, res) => {
   }
 });
 
-app.use(express.static(distPath, { maxAge: '1h' }));
-app.get('*', async (_req, res, next) => {
+// Let's Encrypt HTTP-01: when the domain is proxied to Node, validation hits
+// /.well-known/acme-challenge/. Serve the token before the SPA catch-all.
+const acmePath = path.join(__dirname, '.well-known', 'acme-challenge');
+app.use('/.well-known/acme-challenge', express.static(acmePath));
+
+app.use(express.static(distPath, { index: false, maxAge: '1h' }));
+app.get('*', async (req, res, next) => {
+  if (req.path.startsWith('/api/')) return next();
+  if (req.path.startsWith('/.well-known/')) return res.status(404).end();
   try {
     await fs.access(path.join(distPath, 'index.html'));
     res.sendFile(path.join(distPath, 'index.html'));
