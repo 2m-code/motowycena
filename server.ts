@@ -18,6 +18,13 @@ const adminCookieName = 'eprzyczepy_admin';
 
 const app = express();
 app.set('trust proxy', 1);
+app.disable('x-powered-by');
+app.use((_req, res, next) => {
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 app.use(express.json({ limit: '12mb' }));
 app.use('/uploads', express.static(uploadsDir, { maxAge: '7d' }));
 
@@ -257,7 +264,13 @@ const parseCookies = (header: string | undefined) => {
   if (!header) return out;
   for (const part of header.split(';')) {
     const [name, ...valueParts] = part.trim().split('=');
-    if (name) out[name] = decodeURIComponent(valueParts.join('='));
+    if (!name) continue;
+    const raw = valueParts.join('=');
+    try {
+      out[name] = decodeURIComponent(raw);
+    } catch {
+      out[name] = raw; // tolerate malformed %-encoding instead of throwing (was → HTTP 500)
+    }
   }
   return out;
 };
